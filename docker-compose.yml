@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # Tu servidor API en Perl
+  api-perl:
+    build: .
+    container_name: anime-api
+    ports:
+      - "8080:80"
+    volumes:
+      - ./htdocs:/var/www/html
+      - ./cgi-bin:/usr/lib/cgi-bin
+    restart: unless-stopped
+
+  # La documentación visual que pidió el profe
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-anime
+    ports:
+      - "8081:8080"
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+    volumes:
+      - ./swagger/openapi.yaml:/usr/share/nginx/html/openapi.yaml
+    restart: unless-stopped

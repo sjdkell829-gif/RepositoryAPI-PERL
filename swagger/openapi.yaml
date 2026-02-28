@@ -1,0 +1,51 @@
+openapi: 3.0.0
+info:
+  title: API de Niveles de Poder Anime
+  description: API para consultar y registrar niveles de poder de personajes de anime.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Servidor Local Docker
+paths:
+  /cgi-bin/api.pl:
+    get:
+      summary: Obtener personajes o agregar uno nuevo
+      description: Devuelve la lista de personajes o agrega uno si se usa la acción 'agregar'.
+      parameters:
+        - name: accion
+          in: query
+          description: Usa 'agregar' para registrar un personaje nuevo. Déjalo vacío para leer.
+          required: false
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: ID del personaje que quieres buscar.
+          required: false
+          schema:
+            type: integer
+        - name: nombre
+          in: query
+          description: Nombre del personaje (solo si accion=agregar).
+          required: false
+          schema:
+            type: string
+        - name: universo
+          in: query
+          description: Universo del personaje (solo si accion=agregar).
+          required: false
+          schema:
+            type: string
+        - name: nivel_poder
+          in: query
+          description: Nivel de poder (solo si accion=agregar).
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
