@@ -1,26 +1,25 @@
 FROM debian:bullseye
 
-# 1. Instalamos Apache y Perl
+# Instalamos Apache y Perl
 RUN apt-get update && \
     apt-get install -y apache2 perl libcgi-pm-perl && \
     apt-get clean
 
-# 2. Activamos el motor para la API
+# Activamos el motor CGI
 RUN a2enmod cgid
 
-# 3. Borramos la página de bienvenida de Debian
+# Borramos la basura de Apache
 RUN rm -f /var/www/html/index.html
 
-# 4. Copiamos tus archivos
+# Copiamos los archivos a sus puestos
 COPY index.html /var/www/html/
-COPY ./cgi-bin/api.pl /usr/lib/cgi-bin/
-COPY ./cgi-bin/datos.json /usr/lib/cgi-bin/
+COPY ./cgi-bin/ /usr/lib/cgi-bin/
 
-# 5. PERMISOS (Aquí está el truco)
-# Damos permiso de ejecución a la API
+# PERMISOS CRÍTICOS:
+# Ejecución para la API
 RUN chmod +x /usr/lib/cgi-bin/api.pl
-# Damos permiso de ESCRITURA al archivo de datos para que Apache pueda guardar
+# Escritura total a la CARPETA y al archivo para permitir el guardado
+RUN chmod 777 /usr/lib/cgi-bin
 RUN chmod 666 /usr/lib/cgi-bin/datos.json
 
-# Le decimos a Apache que no se apague
 CMD ["apachectl", "-D", "FOREGROUND"]

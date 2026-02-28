@@ -1,16 +1,17 @@
-[
+{
+  "status": "success",
+  "data": [
     {
-        "id": 1,
-        "nombre": "Saitama",
-        "universo": "One-Punch Man",
-        "nivel_poder": "Infinito",
-        "estado": "Vivo"
+      "nombre": "Saitama",
+      "universo": "One-Punch Man",
+      "nivel_poder": "Infinito",
+      "estado": "Vivo"
     },
     {
-        "id": 2,
-        "nombre": "Goku",
-        "universo": "Dragon Ball Super",
-        "nivel_poder": "Nivel Dios",
-        "estado": "Vivo"
+      "nombre": "Goku",
+      "universo": "Dragon Ball Super",
+      "nivel_poder": "Nivel Dios",
+      "estado": "Vivo"
     }
-]
+  ]
+}
