@@ -7,37 +7,40 @@ use JSON;
 my $cgi = CGI->new;
 my $archivo = '/usr/lib/cgi-bin/datos.json';
 
-# Cabecera para que el navegador sepa que enviamos JSON
 print $cgi->header('application/json; charset=UTF-8');
 
+# 1. Leer el archivo actual con precaución
+my $contenido = "";
+if (-e $archivo) {
+    open my $fh, '<', $archivo;
+    local $/; $contenido = <$fh>;
+    close $fh;
+}
+
+# 2. Si está vacío o dañado, crear estructura base
+my $datos;
+if (!$contenido || $contenido eq "") {
+    $datos = { status => "success", data => [] };
+} else {
+    eval { $datos = decode_json($contenido); };
+    if ($@) { $datos = { status => "success", data => [] }; }
+}
+
+# 3. Lógica para GUARDAR (POST)
 if ($cgi->request_method() eq 'POST') {
     my $json_texto = $cgi->param('POSTDATA');
-    my $nuevo_pj = decode_json($json_texto);
+    my $nuevo_pj;
+    eval { $nuevo_pj = decode_json($json_texto); };
     
-    # 1. Leer datos con precaución
-    open my $fh, '<', $archivo or die "Error al abrir: $!";
-    my $contenido = do { local $/; <$fh> };
-    close $fh;
-    
-    my $datos = decode_json($contenido);
-    
-    # 2. Asegurarnos de que existe la lista 'data' antes de agregar
-    if (!exists $datos->{data}) {
-        $datos->{data} = [];
+    if ($nuevo_pj) {
+        push @{$datos->{data}}, $nuevo_pj;
+        # Escribir en el archivo
+        open my $fh_out, '>', $archivo or die "Error: $!";
+        print $fh_out encode_json($datos);
+        close $fh_out;
+        print encode_json({status => "success", message => "Registrado"});
     }
-    
-    push @{$datos->{data}}, $nuevo_pj;
-    
-    # 3. Guardar de forma segura
-    open my $fh_out, '>', $archivo or die "Error al escribir: $!";
-    print $fh_out encode_json($datos);
-    close $fh_out;
-    
-    print encode_json({status => "success", message => "Registrado"});
 } else {
-    # Si es GET, simplemente mostramos el archivo
-    open my $fh, '<', $archivo or die "No se pudo leer: $!";
-    my $contenido = do { local $/; <$fh> };
-    close $fh;
-    print $contenido;
+    # 4. Lógica para MOSTRAR (GET)
+    print encode_json($datos);
 }
