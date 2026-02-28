@@ -2,71 +2,127 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Escáner de Poder Anime</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niveles de Poder - Anime API</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #1a1a2e; color: white; padding: 20px; }
-        h1 { text-align: center; color: #e94560; }
-        .contenedor { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 30px; }
-        .tarjeta { background-color: #16213e; border: 2px solid #0f3460; padding: 20px; border-radius: 10px; width: 250px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-        .tarjeta h2 { color: #0f3460; background: #e94560; border-radius: 5px; padding: 5px; }
-        .formulario { background: #0f3460; padding: 20px; border-radius: 10px; max-width: 400px; margin: 0 auto; text-align: center; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
-        button { background: #e94560; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        button:hover { background: #ff3b5c; }
+        :root {
+            --primary: #6200ee;
+            --secondary: #03dac6;
+            --bg: #f5f5f5;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { text-align: center; color: var(--primary); }
+        
+        /* Estilo del Formulario */
+        .form-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #3700b3; }
+
+        /* Estilo de las Tarjetas de Anime */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 5px solid var(--secondary); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { margin: 0 0 10px 0; color: #333; }
+        .card p { margin: 5px 0; color: #666; font-size: 14px; }
+        .badge { background: #e0e0e0; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>⚡ Rastreador de Niveles de Poder ⚡</h1>
+<div class="container">
+    <h1>Niveles de Poder Anime ⚡</h1>
 
-    <div class="formulario">
-        <h3>Agregar Nuevo Personaje</h3>
-        <input type="text" id="nombre" placeholder="Nombre (ej. Frieren)">
-        <input type="text" id="universo" placeholder="Universo (ej. Frieren)">
-        <input type="text" id="poder" placeholder="Nivel de Poder (ej. 100,000)">
-        <button onclick="agregarPersonaje()">Registrar en la Base de Datos</button>
+    <div class="form-card">
+        <h3>Registrar nuevo personaje</h3>
+        <form id="animeForm">
+            <div class="form-group">
+                <label>Nombre del Personaje</label>
+                <input type="text" id="nombre" placeholder="Ej. Cid Kagenou" required>
+            </div>
+            <div class="form-group">
+                <label>Universo</label>
+                <input type="text" id="universo" placeholder="Ej. The Eminence in Shadow" required>
+            </div>
+            <div class="form-group">
+                <label>Nivel de Poder</label>
+                <input type="text" id="nivel_poder" placeholder="Ej. I am Atomic" required>
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <select id="estado">
+                    <option value="Vivo">Vivo</option>
+                    <option value="Desaparecido">Desaparecido</option>
+                    <option value="Fallecido">Fallecido</option>
+                </select>
+            </div>
+            <button type="submit">Registrar Personaje</button>
+        </form>
     </div>
 
-    <div class="contenedor" id="lista-personajes"></div>
+    <div class="grid" id="listaPersonajes">
+        </div>
+</div>
 
-    <script>
-        // Función para leer la API de Perl y crear las tarjetas
-        function cargarPersonajes() {
-            fetch('http://localhost/cgi-bin/api.pl')
-            .then(respuesta => respuesta.json())
-            .then(datos => {
-                const contenedor = document.getElementById('lista-personajes');
-                contenedor.innerHTML = ''; 
-                datos.data.forEach(p => {
-                    contenedor.innerHTML += `
-                        <div class="tarjeta">
-                            <h2>${p.nombre}</h2>
+<script>
+    const apiURL = '/cgi-bin/api.pl';
+
+    // 1. FUNCIÓN PARA CARGAR LOS PERSONAJES
+    function cargarPersonajes() {
+        fetch(apiURL)
+            .then(res => res.json())
+            .then(resultado => {
+                const lista = document.getElementById('listaPersonajes');
+                lista.innerHTML = ''; // Limpiamos la vista
+
+                // El truco que faltaba: entrar a resultado.data
+                const personajes = resultado.data; 
+
+                personajes.forEach(p => {
+                    lista.innerHTML += `
+                        <div class="card">
+                            <h3>${p.nombre}</h3>
                             <p><strong>Universo:</strong> ${p.universo}</p>
                             <p><strong>Poder:</strong> ${p.nivel_poder}</p>
-                            <p><strong>Estado:</strong> ${p.estado}</p>
+                            <span class="badge">${p.estado}</span>
                         </div>
                     `;
                 });
-            });
-        }
+            })
+            .catch(err => console.error("Error al cargar:", err));
+    }
 
-        // Función para enviar datos a la API de Perl
-        function agregarPersonaje() {
-            const nombre = document.getElementById('nombre').value;
-            const universo = document.getElementById('universo').value;
-            const poder = document.getElementById('poder').value;
+    // 2. FUNCIÓN PARA REGISTRAR NUEVOS
+    document.getElementById('animeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-            fetch(`http://localhost/cgi-bin/api.pl?accion=agregar&nombre=${nombre}&universo=${universo}&nivel_poder=${poder}`)
-            .then(respuesta => respuesta.json())
-            .then(datos => {
-                alert("Personaje agregado exitosamente");
-                cargarPersonajes(); // Recargar la lista
-            });
-        }
+        const nuevo = {
+            nombre: document.getElementById('nombre').value,
+            universo: document.getElementById('universo').value,
+            nivel_poder: document.getElementById('nivel_poder').value,
+            estado: document.getElementById('estado').value
+        };
 
-        // Cargar los personajes al abrir la página
-        cargarPersonajes();
-    </script>
+        fetch(apiURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevo)
+        })
+        .then(res => res.json())
+        .then(res => {
+            alert("¡Personaje registrado!");
+            document.getElementById('animeForm').reset();
+            cargarPersonajes(); // Recargamos la vista
+        })
+        .catch(err => alert("Error al guardar: " + err));
+    });
+
+    // Cargar al iniciar la página
+    cargarPersonajes();
+</script>
 
 </body>
 </html>
