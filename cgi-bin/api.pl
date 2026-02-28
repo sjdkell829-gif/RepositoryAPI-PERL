@@ -7,10 +7,8 @@ use JSON;
 my $cgi = CGI->new;
 my $archivo = '/usr/lib/cgi-bin/datos.json';
 
-# Cabecera obligatoria para JSON
 print $cgi->header('application/json; charset=UTF-8');
 
-# 1. Función para leer o crear la base si no existe
 sub leer_datos {
     if (!-e $archivo || -s $archivo == 0) {
         return { status => "success", data => [] };
@@ -23,19 +21,34 @@ sub leer_datos {
 
 my $datos = leer_datos();
 
-# 2. Lógica para REGISTRAR (POST)
-if ($cgi->request_method() eq 'POST') {
+# --- LÓGICA DE OPERACIONES (CRUD) ---
+my $metodo = $cgi->request_method();
+
+if ($metodo eq 'DELETE') {
+    my $nombre = $cgi->param('nombre');
+    my @nueva_lista = grep { $_->{nombre} ne $nombre } @{$datos->{data}};
+    $datos->{data} = \@nueva_lista;
+} 
+elsif ($metodo eq 'POST') {
     my $json_texto = $cgi->param('POSTDATA');
     my $nuevo_pj = decode_json($json_texto);
     
-    push @{$datos->{data}}, $nuevo_pj;
-    
-    open my $fh_out, '>', $archivo or die "Error: $!";
-    print $fh_out encode_json($datos);
-    close $fh_out;
-    
-    print encode_json({status => "success", message => "Registrado"});
-} else {
-    # 3. Lógica para MOSTRAR (GET)
-    print encode_json($datos);
+    # Si el personaje ya existe (por nombre), lo actualizamos; si no, lo agregamos
+    my $encontrado = 0;
+    foreach my $pj (@{$datos->{data}}) {
+        if ($pj->{nombre} eq $nuevo_pj->{nombre}) {
+            $pj->{universo} = $nuevo_pj->{universo};
+            $pj->{nivel_poder} = $nuevo_pj->{nivel_poder};
+            $encontrado = 1;
+            last;
+        }
+    }
+    push @{$datos->{data}}, $nuevo_pj if !$encontrado;
 }
+
+# Guardar cambios en el servidor de Render
+open my $fh_out, '>', $archivo or die "Error: $!";
+print $fh_out encode_json($datos);
+close $fh_out;
+
+print encode_json($datos);
