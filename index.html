@@ -2,122 +2,50 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Power Levels - API</title>
+    <title>Anime Power API - Erick</title>
     <style>
-        /* Estilos con temática de anime */
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d1117; color: #c9d1d9; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 800px; }
-        h1 { color: #58a6ff; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
-        
-        /* Estilo del Formulario */
-        form { background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #8b949e; }
-        input { width: 100%; padding: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #238636; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 16px; }
-        button:hover { background: #2ea043; transform: scale(1.02); }
-
-        /* Estilo de las Tarjetas */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; width: 100%; }
-        .card { background: #161b22; border-radius: 10px; padding: 15px; border-left: 5px solid #58a6ff; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .card:hover { transform: translateY(-5px); border-left-color: #f0883e; }
-        .card h3 { margin: 0; color: #f0883e; font-size: 1.2rem; }
-        .card p { margin: 8px 0; font-size: 0.9rem; color: #8b949e; }
-        .power-tag { background: #1f6feb; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: white; padding: 20px; text-align: center; }
+        .form-box { background: #161b22; padding: 20px; border-radius: 10px; border: 1px solid #30363d; max-width: 400px; margin: 0 auto 30px; }
+        input { width: 90%; padding: 10px; margin: 10px 0; background: #0d1117; color: white; border: 1px solid #30363d; border-radius: 5px; }
+        button { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-width: 1000px; margin: auto; }
+        .card { background: #161b22; padding: 15px; border-radius: 8px; border-left: 5px solid #58a6ff; text-align: left; }
+        .card h3 { color: #f0883e; margin: 0; }
     </style>
 </head>
 <body>
+    <h1>Niveles de Poder ⚡</h1>
+    <div class="form-box">
+        <input type="text" id="nombre" placeholder="Nombre (Ej. Shadow)" required>
+        <input type="text" id="universo" placeholder="Universo" required>
+        <input type="text" id="poder" placeholder="Nivel (Ej. I am Atomic)" required>
+        <button onclick="registrar()">Registrar Personaje</button>
+    </div>
+    <div class="grid" id="lista"></div>
 
-<div class="container">
-    <h1>Power Levels API ⚡</h1>
-
-    <form id="animeForm">
-        <div class="input-group">
-            <label>Nombre del Personaje</label>
-            <input type="text" id="nombre" placeholder="Ej. Cid Kagenou / Shadow" required>
-        </div>
-        <div class="input-group">
-            <label>Universo</label>
-            <input type="text" id="universo" placeholder="Ej. The Eminence in Shadow" required>
-        </div>
-        <div class="input-group">
-            <label>Nivel de Poder</label>
-            <input type="text" id="nivel_poder" placeholder="Ej. I am Atomic" required>
-        </div>
-        <button type="submit">Registrar en la Base</button>
-    </form>
-
-    <div class="grid" id="listaPersonajes">
-        </div>
-</div>
-
-
-
-<script>
-    // IMPORTANTE: Ruta de la API en el servidor de Render
-    const apiURL = '/cgi-bin/api.pl';
-
-    // FUNCIÓN PARA CARGAR LA LISTA
-    function cargarPersonajes() {
-        console.log("Consultando API...");
-        fetch(apiURL)
-            .then(res => res.json())
-            .then(resultado => {
-                const contenedor = document.getElementById('listaPersonajes');
-                contenedor.innerHTML = ''; // Limpiamos antes de cargar
-
-                // Accedemos a resultado.data porque así lo envía tu API de Perl
-                if (resultado.data && Array.isArray(resultado.data)) {
-                    resultado.data.forEach(pj => {
-                        contenedor.innerHTML += `
-                            <div class="card">
-                                <h3>${pj.nombre}</h3>
-                                <p><strong>Universo:</strong> ${pj.universo}</p>
-                                <p><strong>Poder:</strong> <span class="power-tag">${pj.nivel_poder}</span></p>
-                            </div>
-                        `;
-                    });
-                } else {
-                    contenedor.innerHTML = '<p>No hay personajes registrados todavía.</p>';
-                }
-            })
-            .catch(err => {
-                console.error("Error al cargar:", err);
-                document.getElementById('listaPersonajes').innerHTML = '<p style="color:red;">Error conectando con la API</p>';
+    <script>
+        const api = '/cgi-bin/api.pl';
+        function cargar() {
+            fetch(api).then(r => r.json()).then(res => {
+                const div = document.getElementById('lista');
+                div.innerHTML = '';
+                res.data.forEach(p => {
+                    div.innerHTML += `<div class="card"><h3>${p.nombre}</h3><p>${p.universo}</p><b>${p.nivel_poder}</b></div>`;
+                });
+            }).catch(e => console.error("Error cargando:", e));
+        }
+        function registrar() {
+            const data = {
+                nombre: document.getElementById('nombre').value,
+                universo: document.getElementById('universo').value,
+                nivel_poder: document.getElementById('poder').value
+            };
+            fetch(api, { method: 'POST', body: JSON.stringify(data) }).then(() => {
+                alert("¡Personaje en la base!");
+                cargar();
             });
-    }
-
-    // FUNCIÓN PARA ENVIAR DATOS (POST)
-    document.getElementById('animeForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const nuevoPersonaje = {
-            nombre: document.getElementById('nombre').value,
-            universo: document.getElementById('universo').value,
-            nivel_poder: document.getElementById('nivel_poder').value,
-            estado: "Vivo"
-        };
-
-        fetch(apiURL, {
-            method: 'POST',
-            body: JSON.stringify(nuevoPersonaje)
-        })
-        .then(res => res.json())
-        .then(respuesta => {
-            alert("¡Personaje registrado con éxito!");
-            document.getElementById('animeForm').reset(); // Limpiar campos
-            cargarPersonajes(); // Recargar la lista automáticamente
-        })
-        .catch(err => {
-            console.error("Error al guardar:", err);
-            alert("Error al intentar guardar el personaje.");
-        });
-    });
-
-    // Cargar personajes al abrir la página por primera vez
-    cargarPersonajes();
-</script>
-
+        }
+        cargar();
+    </script>
 </body>
 </html>

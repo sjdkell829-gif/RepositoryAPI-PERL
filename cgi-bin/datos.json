@@ -4,14 +4,12 @@
     {
       "nombre": "Saitama",
       "universo": "One-Punch Man",
-      "nivel_poder": "Infinito",
-      "estado": "Vivo"
+      "nivel_poder": "Infinito"
     },
     {
       "nombre": "Goku",
       "universo": "Dragon Ball Super",
-      "nivel_poder": "Nivel Dios",
-      "estado": "Vivo"
+      "nivel_poder": "Nivel Dios"
     }
   ]
 }
