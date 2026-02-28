@@ -1,43 +1,55 @@
 #!C:/xampp/perl/bin/perl.exe
 use strict;
 use warnings;
+use CGI;
 use JSON::PP;
 
-# 1. ESTO ES VITAL: Le decimos a Apache manualmente que enviaremos un JSON.
-# Los dos saltos de línea (\n\n) son obligatorios para que no dé el Error 500.
-print "Content-Type: application/json; charset=utf-8\n\n";
+my $cgi = CGI->new;
+# Permitimos que cualquier página web pueda leer esta API (CORS)
+print $cgi->header(-type => 'application/json', -charset => 'utf-8', -access_control_allow_origin => '*');
 
-# 2. Nuestra "base de datos" de personajes
-my $personajes = [
-    {
-        id => 1,
-        nombre => "Saitama",
-        universo => "One-Punch Man",
-        nivel_poder => "Infinito (Rompe su limitador)",
-        estado => "Vivo"
-    },
-    {
-        id => 2,
-        nombre => "Goku (Ultra Instinto)",
-        universo => "Dragon Ball Super",
-        nivel_poder => "Nivel Dios",
-        estado => "Vivo"
-    },
-    {
-        id => 3,
-        nombre => "Frieren",
-        universo => "Frieren",
-        nivel_poder => "Más de 100,000 de maná",
-        estado => "Viva"
-    },
-    {
-        id => 4,
-        nombre => "Cid Kagenou",
-        universo => "The Eminence in Shadow",
-        nivel_poder => "I am Atomic",
-        estado => "Vivo"
+my $archivo = 'datos.json';
+my $personajes = [];
+
+# Leer los personajes guardados
+if (open(my $fh, '<', $archivo)) {
+    local $/ = undef;
+    my $json_texto = <$fh>;
+    close($fh);
+    $personajes = decode_json($json_texto) if $json_texto;
+}
+
+# Revisar si queremos "leer" o "agregar"
+my $accion = $cgi->param('accion') || 'leer';
+
+if ($accion eq 'agregar') {
+    # Recibir los datos del nuevo personaje
+    my $nombre = $cgi->param('nombre');
+    my $universo = $cgi->param('universo');
+    my $poder = $cgi->param('nivel_poder');
+
+    if ($nombre && $poder) {
+        my $nuevo_id = scalar(@$personajes) + 1;
+        my $nuevo_personaje = {
+            id => $nuevo_id,
+            nombre => $nombre,
+            universo => $universo || "Desconocido",
+            nivel_poder => $poder,
+            estado => "Vivo"
+        };
+
+        push(@$personajes, $nuevo_personaje);
+
+        # Guardar en el archivo JSON
+        if (open(my $fh, '>', $archivo)) {
+            print $fh encode_json($personajes);
+            close($fh);
+            print encode_json({ status => "success", message => "Personaje agregado" });
+        }
+    } else {
+        print encode_json({ status => "error", message => "Faltan datos" });
     }
-];
-
-# 3. Enviamos la lista completa
-print encode_json({ status => "success", total => scalar(@$personajes), data => $personajes });
+} else {
+    # Mostrar la lista
+    print encode_json({ status => "success", data => $personajes });
+}

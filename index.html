@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Escáner de Poder Anime</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a2e; color: white; padding: 20px; }
+        h1 { text-align: center; color: #e94560; }
+        .contenedor { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 30px; }
+        .tarjeta { background-color: #16213e; border: 2px solid #0f3460; padding: 20px; border-radius: 10px; width: 250px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        .tarjeta h2 { color: #0f3460; background: #e94560; border-radius: 5px; padding: 5px; }
+        .formulario { background: #0f3460; padding: 20px; border-radius: 10px; max-width: 400px; margin: 0 auto; text-align: center; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { background: #e94560; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #ff3b5c; }
+    </style>
+</head>
+<body>
+
+    <h1>⚡ Rastreador de Niveles de Poder ⚡</h1>
+
+    <div class="formulario">
+        <h3>Agregar Nuevo Personaje</h3>
+        <input type="text" id="nombre" placeholder="Nombre (ej. Frieren)">
+        <input type="text" id="universo" placeholder="Universo (ej. Frieren)">
+        <input type="text" id="poder" placeholder="Nivel de Poder (ej. 100,000)">
+        <button onclick="agregarPersonaje()">Registrar en la Base de Datos</button>
+    </div>
+
+    <div class="contenedor" id="lista-personajes"></div>
+
+    <script>
+        // Función para leer la API de Perl y crear las tarjetas
+        function cargarPersonajes() {
+            fetch('http://localhost/cgi-bin/api.pl')
+            .then(respuesta => respuesta.json())
+            .then(datos => {
+                const contenedor = document.getElementById('lista-personajes');
+                contenedor.innerHTML = ''; 
+                datos.data.forEach(p => {
+                    contenedor.innerHTML += `
+                        <div class="tarjeta">
+                            <h2>${p.nombre}</h2>
+                            <p><strong>Universo:</strong> ${p.universo}</p>
+                            <p><strong>Poder:</strong> ${p.nivel_poder}</p>
+                            <p><strong>Estado:</strong> ${p.estado}</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Función para enviar datos a la API de Perl
+        function agregarPersonaje() {
+            const nombre = document.getElementById('nombre').value;
+            const universo = document.getElementById('universo').value;
+            const poder = document.getElementById('poder').value;
+
+            fetch(`http://localhost/cgi-bin/api.pl?accion=agregar&nombre=${nombre}&universo=${universo}&nivel_poder=${poder}`)
+            .then(respuesta => respuesta.json())
+            .then(datos => {
+                alert("Personaje agregado exitosamente");
+                cargarPersonajes(); // Recargar la lista
+            });
+        }
+
+        // Cargar los personajes al abrir la página
+        cargarPersonajes();
+    </script>
+
+</body>
+</html>
