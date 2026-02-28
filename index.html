@@ -24,15 +24,21 @@
 
     <script>
         const apiURL = '/cgi-bin/api.pl';
-        function cargar() {
-            fetch(apiURL).then(r => r.json()).then(res => {
-                const lista = document.getElementById('lista');
-                lista.innerHTML = '';
-                res.data.forEach(p => {
-                    lista.innerHTML += `<div class="card"><h3>${p.nombre}</h3><p>${p.universo}</p><b>${p.nivel_poder}</b></div>`;
+function cargar() {
+    fetch('/cgi-bin/api.pl')
+        .then(r => r.json())
+        .then(resultado => {
+            const lista = document.getElementById('lista'); // o el ID que uses
+            lista.innerHTML = '';
+            
+            // EL SECRETO: entrar a .data
+            if(resultado.data && Array.isArray(resultado.data)) {
+                resultado.data.forEach(p => {
+                    lista.innerHTML += `<div class="card"><h3>${p.nombre}</h3><p>${p.nivel_poder}</p></div>`;
                 });
-            });
-        }
+            }
+        });
+}
         document.getElementById('animeForm').onsubmit = (e) => {
             e.preventDefault();
             const data = {
