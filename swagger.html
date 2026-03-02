@@ -1,20 +1,20 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Documentación API - Swagger UI</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
-</head>
-<body>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-    <script>
-        window.onload = () => {
-            window.ui = SwaggerUIBundle({
-                url: "swagger.json",
-                dom_id: '#swagger-ui',
-            });
-        };
-    </script>
-</body>
-</html>
+{
+  "openapi": "3.0.0",
+  "info": { "title": "Anime API CRUD", "version": "1.0.0" },
+  "paths": {
+    "/cgi-bin/api.pl": {
+      "get": { "summary": "Obtener lista de personajes" },
+      "post": { "summary": "Agregar personaje nuevo" },
+      "patch": {
+        "summary": "Editar personaje existente",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "type": "object" } } }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar personaje",
+        "parameters": [{ "name": "nombre", "in": "query", "required": true, "schema": { "type": "string" } }]
+      }
+    }
+  }
+}

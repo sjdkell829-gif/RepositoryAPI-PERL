@@ -7,18 +7,18 @@ RUN apt-get update && \
 RUN a2enmod cgid
 RUN rm -f /var/www/html/index.html
 
-# Copia explícita de archivos para evitar el 404
+# Copiamos archivos al servidor
 COPY index.html /var/www/html/index.html
 COPY swagger.html /var/www/html/swagger.html
 COPY swagger.json /var/www/html/swagger.json
 COPY ./cgi-bin/ /usr/lib/cgi-bin/
 
-# Permisos críticos
+# Permisos de ejecución y escritura
 RUN chmod +x /usr/lib/cgi-bin/api.pl
 RUN chmod 777 /usr/lib/cgi-bin
 RUN chmod 666 /usr/lib/cgi-bin/datos.json
 
-# Asegura que index.html sea lo primero que cargue
+# Asegurar que index.html sea la principal
 RUN echo "DirectoryIndex index.html" >> /etc/apache2/apache2.conf
 
 CMD ["apachectl", "-D", "FOREGROUND"]

@@ -2,62 +2,72 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Anime Power Management - Erick</title>
+    <title>Anime Power Levels - Erick</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: white; padding: 20px; text-align: center; }
-        .form-box { background: #161b22; padding: 20px; border-radius: 10px; border: 1px solid #30363d; max-width: 400px; margin: 0 auto 30px; }
+        .form-box { background: #161b22; padding: 20px; border-radius: 10px; border: 1px solid #30363d; max-width: 450px; margin: 0 auto 30px; }
         input { width: 90%; padding: 10px; margin: 10px 0; background: #0d1117; color: white; border: 1px solid #30363d; border-radius: 5px; }
         button { border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
-        .btn-main { background: #238636; color: white; }
+        .btn-save { background: #238636; color: white; }
         .btn-edit { background: #d29922; color: white; }
         .btn-delete { background: #da3633; color: white; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; max-width: 1000px; margin: auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; max-width: 1100px; margin: auto; }
         .card { background: #161b22; padding: 15px; border-radius: 8px; border-left: 5px solid #58a6ff; text-align: left; }
+        a { color: #58a6ff; text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
-    <h1>Gestión de Niveles de Poder ⚡</h1>
+    <h1>Gestión de Personajes de Anime ⚡</h1>
+    <p><a href="/swagger.html">Ver Documentación API (Swagger)</a></p>
+
     <div class="form-box">
-        <input type="text" id="nombre" placeholder="Nombre del Personaje">
-        <input type="text" id="universo" placeholder="Universo">
-        <input type="text" id="poder" placeholder="Nivel de Poder">
-        <button id="btnAccion" class="btn-main" onclick="procesar()">Guardar Personaje</button>
-        <button id="btnCancelar" style="display:none;" onclick="limpiar()">Cancelar</button>
+        <h3 id="form-title">Agregar Nuevo Personaje</h3>
+        <input type="text" id="nombre" placeholder="Nombre (ej. Shadow)">
+        <input type="text" id="universo" placeholder="Universo (ej. Eminence in Shadow)">
+        <input type="text" id="poder" placeholder="Nivel de Poder (ej. I am Atomic)">
+        <button id="btnAccion" class="btn-save" onclick="guardar()">Guardar Personaje</button>
+        <button id="btnCancelar" style="display:none; background:#6e7681;" onclick="limpiarFormulario()">Cancelar</button>
     </div>
-    <div class="grid" id="lista"></div>
+
+    <div class="grid" id="lista-personajes"></div>
 
     <script>
-        const api = '/cgi-bin/api.pl';
-        let modoEdicion = false;
+        const API_URL = '/cgi-bin/api.pl';
+        let editando = false;
 
-        function cargar() {
-            fetch(api).then(r => r.json()).then(res => {
-                const div = document.getElementById('lista');
-                div.innerHTML = '';
+        function cargarPersonajes() {
+            fetch(API_URL).then(r => r.json()).then(res => {
+                const contenedor = document.getElementById('lista-personajes');
+                contenedor.innerHTML = '';
                 res.data.forEach(p => {
-                    div.innerHTML += `
+                    contenedor.innerHTML += `
                         <div class="card">
                             <h3>${p.nombre}</h3>
-                            <p>${p.universo}</p>
-                            <b>${p.nivel_poder}</b><br>
+                            <p><b>Universo:</b> ${p.universo}</p>
+                            <p><b>Poder:</b> ${p.nivel_poder}</p>
                             <button class="btn-edit" onclick="prepararEdicion('${p.nombre}', '${p.universo}', '${p.nivel_poder}')">Editar</button>
                             <button class="btn-delete" onclick="eliminar('${p.nombre}')">Eliminar</button>
                         </div>`;
                 });
-            });
+            }).catch(err => console.error("Error cargando:", err));
         }
 
-        function procesar() {
+        function guardar() {
             const data = {
                 nombre: document.getElementById('nombre').value,
                 universo: document.getElementById('universo').value,
                 nivel_poder: document.getElementById('poder').value
             };
-            const metodo = modoEdicion ? 'PATCH' : 'POST';
-            
-            fetch(api, { method: metodo, body: JSON.stringify(data) }).then(() => {
-                limpiar();
-                cargar();
+
+            const metodo = editando ? 'PATCH' : 'POST';
+
+            fetch(API_URL, {
+                method: metodo,
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            }).then(() => {
+                limpiarFormulario();
+                cargarPersonajes();
             });
         }
 
@@ -65,29 +75,32 @@
             document.getElementById('nombre').value = n;
             document.getElementById('universo').value = u;
             document.getElementById('poder').value = p;
-            document.getElementById('nombre').disabled = true;
-            document.getElementById('btnAccion').innerText = "Actualizar Datos (PATCH)";
+            document.getElementById('nombre').disabled = true; // El nombre es la llave
+            document.getElementById('btnAccion').innerText = "Actualizar (PATCH)";
+            document.getElementById('form-title').innerText = "Editando a " + n;
             document.getElementById('btnCancelar').style.display = "inline-block";
-            modoEdicion = true;
+            editando = true;
         }
 
         function eliminar(nombre) {
             if(confirm('¿Eliminar a ' + nombre + '?')) {
-                fetch(api + '?nombre=' + encodeURIComponent(nombre), { method: 'DELETE' }).then(() => cargar());
+                fetch(`${API_URL}?nombre=${encodeURIComponent(nombre)}`, { method: 'DELETE' })
+                .then(() => cargarPersonajes());
             }
         }
 
-        function limpiar() {
+        function limpiarFormulario() {
             document.getElementById('nombre').value = '';
             document.getElementById('universo').value = '';
             document.getElementById('poder').value = '';
             document.getElementById('nombre').disabled = false;
             document.getElementById('btnAccion').innerText = "Guardar Personaje";
+            document.getElementById('form-title').innerText = "Agregar Nuevo Personaje";
             document.getElementById('btnCancelar').style.display = "none";
-            modoEdicion = false;
+            editando = false;
         }
 
-        cargar();
+        cargarPersonajes();
     </script>
 </body>
 </html>

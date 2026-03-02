@@ -7,49 +7,51 @@ use JSON;
 my $cgi = CGI->new;
 my $archivo = '/usr/lib/cgi-bin/datos.json';
 
+# Cabecera para JSON
 print $cgi->header('application/json; charset=UTF-8');
 
-sub leer_datos {
-    if (!-e $archivo || -s $archivo == 0) {
-        return { status => "success", data => [] };
-    }
-    open my $fh, '<', $archivo or return { status => "success", data => [] };
-    my $contenido = do { local $/; <$fh> };
+sub leer_json {
+    if (!-e $archivo || -s $archivo == 0) { return { status => "ok", data => [] }; }
+    open my $fh, '<', $archivo or return { status => "ok", data => [] };
+    my $content = do { local $/; <$fh> };
     close $fh;
-    eval { return decode_json($contenido); } || return { status => "success", data => [] };
+    return decode_json($content);
 }
 
-my $datos = leer_datos();
+sub guardar_json {
+    my ($datos) = @_;
+    open my $fh, '>', $archivo or die "Error: $!";
+    print $fh encode_json($datos);
+    close $fh;
+}
+
+my $datos = leer_json();
 my $metodo = $cgi->request_method();
 
-# --- LÓGICA CRUD ---
-
-if ($metodo eq 'DELETE') {
-    my $nombre = $cgi->param('nombre');
-    my @nueva_lista = grep { $_->{nombre} ne $nombre } @{$datos->{data}};
-    $datos->{data} = \@nueva_lista;
+if ($metodo eq 'POST') {
+    # CREAR
+    my $json_input = $cgi->param('POSTDATA');
+    my $nuevo = decode_json($json_input);
+    push @{$datos->{data}}, $nuevo;
 } 
-elsif ($metodo eq 'POST') {
-    my $json_texto = $cgi->param('POSTDATA');
-    my $nuevo_pj = decode_json($json_texto);
-    push @{$datos->{data}}, $nuevo_pj;
-}
 elsif ($metodo eq 'PATCH') {
-    my $json_texto = $cgi->param('POSTDATA');
-    my $update_data = decode_json($json_texto);
-    
+    # ACTUALIZAR
+    my $json_input = $cgi->param('POSTDATA');
+    my $update = decode_json($json_input);
     foreach my $pj (@{$datos->{data}}) {
-        if ($pj->{nombre} eq $update_data->{nombre}) {
-            $pj->{universo} = $update_data->{universo} if $update_data->{universo};
-            $pj->{nivel_poder} = $update_data->{nivel_poder} if $update_data->{nivel_poder};
+        if ($pj->{nombre} eq $update->{nombre}) {
+            $pj->{universo} = $update->{universo} if $update->{universo};
+            $pj->{nivel_poder} = $update->{nivel_poder} if $update->{nivel_poder};
             last;
         }
     }
+} 
+elsif ($metodo eq 'DELETE') {
+    # ELIMINAR
+    my $nombre_a_borrar = $cgi->param('nombre');
+    my @filtrado = grep { $_->{nombre} ne $nombre_a_borrar } @{$datos->{data}};
+    $datos->{data} = \@filtrado;
 }
 
-# Guardar cambios en el archivo JSON
-open my $fh_out, '>', $archivo or die "Error: $!";
-print $fh_out encode_json($datos);
-close $fh_out;
-
-print encode_json($datos);
+guardar_json($datos);
+print encode_json($datos); # Retorna la lista actualizada
