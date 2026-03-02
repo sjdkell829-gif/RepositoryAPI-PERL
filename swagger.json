@@ -1,0 +1,41 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Anime Power Levels API",
+    "description": "API para gestionar niveles de poder de personajes de anime",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/cgi-bin/api.pl": {
+      "get": {
+        "summary": "Obtener todos los personajes",
+        "responses": { "200": { "description": "Lista de personajes" } }
+      },
+      "post": {
+        "summary": "Registrar o editar un personaje",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": { "type": "string" },
+                  "universo": { "type": "string" },
+                  "nivel_poder": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Éxito" } }
+      },
+      "delete": {
+        "summary": "Eliminar un personaje",
+        "parameters": [
+          { "name": "nombre", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Eliminado" } }
+      }
+    }
+  }
+}
