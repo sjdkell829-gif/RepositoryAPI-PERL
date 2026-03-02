@@ -20,9 +20,9 @@ sub leer_datos {
 }
 
 my $datos = leer_datos();
-
-# --- LÓGICA DE OPERACIONES (CRUD) ---
 my $metodo = $cgi->request_method();
+
+# --- LÓGICA CRUD ---
 
 if ($metodo eq 'DELETE') {
     my $nombre = $cgi->param('nombre');
@@ -32,21 +32,22 @@ if ($metodo eq 'DELETE') {
 elsif ($metodo eq 'POST') {
     my $json_texto = $cgi->param('POSTDATA');
     my $nuevo_pj = decode_json($json_texto);
+    push @{$datos->{data}}, $nuevo_pj;
+}
+elsif ($metodo eq 'PATCH') {
+    my $json_texto = $cgi->param('POSTDATA');
+    my $update_data = decode_json($json_texto);
     
-    # Si el personaje ya existe (por nombre), lo actualizamos; si no, lo agregamos
-    my $encontrado = 0;
     foreach my $pj (@{$datos->{data}}) {
-        if ($pj->{nombre} eq $nuevo_pj->{nombre}) {
-            $pj->{universo} = $nuevo_pj->{universo};
-            $pj->{nivel_poder} = $nuevo_pj->{nivel_poder};
-            $encontrado = 1;
+        if ($pj->{nombre} eq $update_data->{nombre}) {
+            $pj->{universo} = $update_data->{universo} if $update_data->{universo};
+            $pj->{nivel_poder} = $update_data->{nivel_poder} if $update_data->{nivel_poder};
             last;
         }
     }
-    push @{$datos->{data}}, $nuevo_pj if !$encontrado;
 }
 
-# Guardar cambios en el servidor de Render
+# Guardar cambios en el archivo JSON
 open my $fh_out, '>', $archivo or die "Error: $!";
 print $fh_out encode_json($datos);
 close $fh_out;

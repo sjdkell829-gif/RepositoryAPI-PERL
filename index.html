@@ -7,9 +7,10 @@
         body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: white; padding: 20px; text-align: center; }
         .form-box { background: #161b22; padding: 20px; border-radius: 10px; border: 1px solid #30363d; max-width: 400px; margin: 0 auto 30px; }
         input { width: 90%; padding: 10px; margin: 10px 0; background: #0d1117; color: white; border: 1px solid #30363d; border-radius: 5px; }
-        button { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
-        .btn-edit { background: #d29922; }
-        .btn-delete { background: #da3633; }
+        button { border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
+        .btn-main { background: #238636; color: white; }
+        .btn-edit { background: #d29922; color: white; }
+        .btn-delete { background: #da3633; color: white; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; max-width: 1000px; margin: auto; }
         .card { background: #161b22; padding: 15px; border-radius: 8px; border-left: 5px solid #58a6ff; text-align: left; }
     </style>
@@ -20,12 +21,14 @@
         <input type="text" id="nombre" placeholder="Nombre del Personaje">
         <input type="text" id="universo" placeholder="Universo">
         <input type="text" id="poder" placeholder="Nivel de Poder">
-        <button id="btnAccion" onclick="guardar()">Registrar / Actualizar</button>
+        <button id="btnAccion" class="btn-main" onclick="procesar()">Guardar Personaje</button>
+        <button id="btnCancelar" style="display:none;" onclick="limpiar()">Cancelar</button>
     </div>
     <div class="grid" id="lista"></div>
 
     <script>
         const api = '/cgi-bin/api.pl';
+        let modoEdicion = false;
 
         function cargar() {
             fetch(api).then(r => r.json()).then(res => {
@@ -44,13 +47,15 @@
             });
         }
 
-        function guardar() {
+        function procesar() {
             const data = {
                 nombre: document.getElementById('nombre').value,
                 universo: document.getElementById('universo').value,
                 nivel_poder: document.getElementById('poder').value
             };
-            fetch(api, { method: 'POST', body: JSON.stringify(data) }).then(() => {
+            const metodo = modoEdicion ? 'PATCH' : 'POST';
+            
+            fetch(api, { method: metodo, body: JSON.stringify(data) }).then(() => {
                 limpiar();
                 cargar();
             });
@@ -60,13 +65,15 @@
             document.getElementById('nombre').value = n;
             document.getElementById('universo').value = u;
             document.getElementById('poder').value = p;
-            document.getElementById('nombre').disabled = true; // El nombre actúa como ID
+            document.getElementById('nombre').disabled = true;
+            document.getElementById('btnAccion').innerText = "Actualizar Datos (PATCH)";
+            document.getElementById('btnCancelar').style.display = "inline-block";
+            modoEdicion = true;
         }
 
         function eliminar(nombre) {
             if(confirm('¿Eliminar a ' + nombre + '?')) {
-                fetch(api + '?nombre=' + encodeURIComponent(nombre), { method: 'DELETE' })
-                .then(() => cargar());
+                fetch(api + '?nombre=' + encodeURIComponent(nombre), { method: 'DELETE' }).then(() => cargar());
             }
         }
 
@@ -75,6 +82,9 @@
             document.getElementById('universo').value = '';
             document.getElementById('poder').value = '';
             document.getElementById('nombre').disabled = false;
+            document.getElementById('btnAccion').innerText = "Guardar Personaje";
+            document.getElementById('btnCancelar').style.display = "none";
+            modoEdicion = false;
         }
 
         cargar();
