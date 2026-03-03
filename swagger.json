@@ -1,19 +1,66 @@
 {
   "openapi": "3.0.0",
-  "info": { "title": "Anime API CRUD", "version": "1.0.0" },
+  "info": {
+    "title": "Anime Power API CRUD",
+    "description": "API interactiva para gestionar personajes de anime",
+    "version": "1.0.0"
+  },
   "paths": {
     "/cgi-bin/api.pl": {
-      "get": { "summary": "Obtener lista de personajes" },
-      "post": { "summary": "Agregar personaje nuevo" },
-      "patch": {
-        "summary": "Editar personaje existente",
+      "get": {
+        "summary": "Obtener lista de personajes",
+        "responses": { "200": { "description": "Lista obtenida" } }
+      },
+      "post": {
+        "summary": "Agregar personaje nuevo",
         "requestBody": {
-          "content": { "application/json": { "schema": { "type": "object" } } }
-        }
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": { "type": "string", "example": "Shadow" },
+                  "universo": { "type": "string", "example": "The Eminence in Shadow" },
+                  "nivel_poder": { "type": "string", "example": "I am Atomic" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Creado" } }
+      },
+      "patch": {
+        "summary": "Editar personaje (PATCH)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": { "type": "string", "example": "Shadow" },
+                  "universo": { "type": "string", "example": "Nuevo Universo" },
+                  "nivel_poder": { "type": "string", "example": "Nuevo Poder" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Actualizado" } }
       },
       "delete": {
         "summary": "Eliminar personaje",
-        "parameters": [{ "name": "nombre", "in": "query", "required": true, "schema": { "type": "string" } }]
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "required": true,
+            "description": "Nombre exacto del personaje a borrar",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Eliminado" } }
       }
     }
   }
