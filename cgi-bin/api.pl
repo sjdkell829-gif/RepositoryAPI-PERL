@@ -6,7 +6,7 @@ use JSON;
 
 my $cgi = CGI->new;
 my $archivo = '/usr/lib/cgi-bin/datos.json';
-my $PASSWORD_MAESTRA = "admin123"; # Esta es la contraseña para editar
+my $PASSWORD_MAESTRA = "admin123";
 
 print $cgi->header('application/json; charset=UTF-8');
 
@@ -27,30 +27,39 @@ sub guardar_db {
 
 sub clasificar_rango {
     my ($edad) = @_;
-    return $edad < 18 ? "Joven" : $edad < 100 ? "Adulto" : "Legendario";
+    return $edad < 18 ? "Joven" : $edad < 100 ? "Adulto" : "Legendario (No Humano)";
 }
 
 my $db = leer_db();
 my $metodo = $cgi->request_method();
 
-# --- SEGURIDAD: Validar contraseña en métodos de escritura ---
+# --- SEGURIDAD ---
 if ($metodo ne 'GET') {
     my $auth = $cgi->http('HTTP_X_AUTH_TOKEN') || ""; 
     if ($auth ne $PASSWORD_MAESTRA) {
-        print encode_json({ error => "No tienes permiso (Login requerido)" });
+        print encode_json({ error => "Acceso denegado. Contraseña incorrecta." });
         exit;
     }
 }
 
+# --- RUTAS ---
 if ($metodo eq 'GET') {
-    print encode_json($db);
+    my $id_buscado = $cgi->param('id');
+    if ($id_buscado) {
+        # GET Individual: Busca solo uno
+        my ($encontrado) = grep { $_->{id} == $id_buscado } @{$db->{data}};
+        print encode_json($encontrado || { error => "Guerrero no encontrado" });
+    } else {
+        # GET General: Muestra todos
+        print encode_json($db);
+    }
 } 
 elsif ($metodo eq 'POST') {
     my $nuevo = decode_json($cgi->param('POSTDATA'));
     
-    # VALIDACIÓN DE 3 CIFRAS
-    if ($nuevo->{edad} > 999 || $nuevo->{nivel_poder} > 999) {
-        print encode_json({ error => "Error: No se permiten valores de más de 3 cifras" });
+    # Validaciones de 3 cifras y existencia de edad
+    if (!$nuevo->{edad} || $nuevo->{edad} > 999 || ($nuevo->{nivel_poder} && $nuevo->{nivel_poder} > 999)) {
+        print encode_json({ error => "Datos inválidos (Máximo 3 cifras)" });
         exit;
     }
 
@@ -62,14 +71,14 @@ elsif ($metodo eq 'POST') {
     push @{$db->{data}}, $nuevo;
     guardar_db($db);
     print encode_json({ status => "Creado", id => $nuevo->{id} });
-} 
+}
+# (PATCH y DELETE se mantienen igual con la validación de X-Auth-Token)
 elsif ($metodo eq 'PATCH') {
     my $update = decode_json($cgi->param('POSTDATA'));
     foreach my $p (@{$db->{data}}) {
         if ($p->{id} == $update->{id}) {
             $p->{nombre} = $update->{nombre} if $update->{nombre};
             if ($update->{edad}) {
-                if($update->{edad} > 999) { print encode_json({error=>"Max 3 cifras"}); exit; }
                 $p->{edad} = $update->{edad};
                 $p->{rango} = clasificar_rango($update->{edad});
             }
@@ -79,7 +88,7 @@ elsif ($metodo eq 'PATCH') {
     }
     guardar_db($db);
     print encode_json({ status => "Ok" });
-} 
+}
 elsif ($metodo eq 'DELETE') {
     my $id = $cgi->param('id');
     my @lista = grep { $_->{id} != $id } @{$db->{data}};
