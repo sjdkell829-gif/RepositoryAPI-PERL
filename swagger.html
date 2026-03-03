@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Anime API CRUD - Erick</title>
+    <title>Anime API CRUD - Erick con IDs</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
 </head>
 <body>
@@ -11,59 +11,36 @@
     <script>
         window.onload = () => {
             window.ui = SwaggerUIBundle({
-                // Definimos la configuración directamente aquí para evitar errores de carga
                 spec: {
                     "openapi": "3.0.0",
-                    "info": { "title": "Anime API CRUD", "version": "1.0.0" },
+                    "info": { "title": "Anime API con IDs", "version": "1.1.0" },
                     "paths": {
                         "/cgi-bin/api.pl": {
-                            "get": { "summary": "Listar personajes", "responses": {"200": {"description": "OK"}} },
+                            "get": {
+                                "summary": "Obtener personajes",
+                                "parameters": [{ "name": "id", "in": "query", "description": "ID del personaje (Opcional)", "schema": { "type": "integer" } }],
+                                "responses": { "200": { "description": "OK" } }
+                            },
                             "post": {
-                                "summary": "Agregar personaje",
+                                "summary": "Agregar personaje (Genera ID solo)",
                                 "requestBody": {
                                     "required": true,
-                                    "content": {
-                                        "application/json": {
-                                            "schema": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "nombre": { "type": "string", "example": "Goku" },
-                                                    "universo": { "type": "string", "example": "Dragon Ball" },
-                                                    "nivel_poder": { "type": "string", "example": "9000" }
-                                                }
-                                            }
-                                        }
-                                    }
+                                    "content": { "application/json": { "schema": { "type": "object", "properties": { "nombre": {"type":"string"}, "universo": {"type":"string"}, "nivel_poder": {"type":"string"} } } } }
                                 },
-                                "responses": {"200": {"description": "OK"}}
+                                "responses": { "200": { "description": "Creado" } }
                             },
                             "patch": {
-                                "summary": "Editar personaje",
+                                "summary": "Editar por ID",
                                 "requestBody": {
                                     "required": true,
-                                    "content": {
-                                        "application/json": {
-                                            "schema": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "nombre": { "type": "string", "example": "Goku" },
-                                                    "universo": { "type": "string", "example": "DB Super" }
-                                                }
-                                            }
-                                        }
-                                    }
+                                    "content": { "application/json": { "schema": { "type": "object", "properties": { "id": {"type":"integer", "example": 1}, "nombre": {"type":"string"}, "universo": {"type":"string"} } } } }
                                 },
-                                "responses": {"200": {"description": "OK"}}
+                                "responses": { "200": { "description": "Actualizado" } }
                             },
                             "delete": {
-                                "summary": "Eliminar personaje",
-                                "parameters": [{
-                                    "name": "nombre",
-                                    "in": "query",
-                                    "required": true,
-                                    "schema": { "type": "string" }
-                                }],
-                                "responses": {"200": {"description": "OK"}}
+                                "summary": "Eliminar por ID",
+                                "parameters": [{ "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }],
+                                "responses": { "200": { "description": "Eliminado" } }
                             }
                         }
                     }
