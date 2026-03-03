@@ -97,36 +97,48 @@
         const API_URL = '/cgi-bin/api.pl';
 
         // 1. CARGAR TODOS LOS GUERREROS
-        async function cargarTodos() {
-            try {
-                const res = await fetch(API_URL);
-                const json = await res.json();
-                const tbody = document.getElementById('tabla-cuerpo');
-                tbody.innerHTML = '';
+ // Busca esta función dentro de tu index.html y asegúrate que esté así:
+async function enviarDatos(metodo) {
+    const passInput = document.getElementById('pass'); // El input de la contraseña
+    const token = passInput.value.trim(); // Quitamos espacios accidentales
 
-                if(!json || json.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-muted p-4">No hay personajes registrados.</td></tr>';
-                    return;
-                }
+    if (!token && metodo !== 'GET') {
+        alert("¡Debes ingresar la contraseña (admin123)!");
+        return;
+    }
 
-                json.forEach(p => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><span class="id-badge">${p.id}</span></td>
-                            <td><b class="text-dark">${p.nombre}</b><br><small class="text-muted">${p.universo || 'N/A'}</small></td>
-                            <td>${p.edad} años</td>
-                            <td><span class="rango-badge bg-light text-dark border">${p.rango}</span></td>
-                            <td><span class="badge bg-warning text-dark">${p.nivel_poder || 0}</span></td>
-                            <td>
-                                <button onclick='prepararEdicion(${JSON.stringify(p)})' class="btn btn-sm btn-outline-warning me-1">Editar</button>
-                                <button onclick="borrar(${p.id})" class="btn btn-sm btn-delete">Eliminar</button>
-                            </td>
-                        </tr>`;
-                });
-            } catch (e) { 
-                console.error("Error:", e); 
-            }
+    const data = {
+        nombre: document.getElementById('p-nombre').value,
+        edad: parseInt(document.getElementById('p-edad').value),
+        nivel_poder: parseInt(document.getElementById('p-poder').value),
+        universo: document.getElementById('p-universo').value
+    };
+
+    if(metodo === 'PUT') data.id = parseInt(document.getElementById('p-id').value);
+
+    try {
+        const res = await fetch(API_URL, { 
+            method: metodo, 
+            headers: { 
+                'X-Auth-Token': token, // El encabezado que espera el servidor
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data) 
+        });
+
+        const result = await res.json();
+        
+        if(result.error) {
+            alert("❌ Error del Servidor: " + result.error);
+        } else {
+            alert("✅ Operación exitosa");
+            cancelarEdicion();
+            cargarTodos();
         }
+    } catch (e) {
+        alert("❌ Error de conexión. Revisa que el servidor esté activo.");
+    }
+}
 
         // 2. PREPARAR EL FORMULARIO PARA EDITAR (PUT)
         function prepararEdicion(p) {
