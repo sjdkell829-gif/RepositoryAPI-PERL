@@ -1,37 +1,43 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Anime Power API",
-    "version": "1.0.0",
-    "description": "CRUD completo de personajes"
+    "title": "Anime API CRUD Completo",
+    "description": "API gestionada por Perl para niveles de poder",
+    "version": "1.0.0"
   },
   "paths": {
     "/cgi-bin/api.pl": {
       "get": {
         "summary": "Listar personajes",
-        "responses": { "200": { "description": "OK" } }
+        "description": "Obtiene todos los personajes guardados en el archivo JSON",
+        "responses": {
+          "200": { "description": "Lista de personajes obtenida" }
+        }
       },
       "post": {
         "summary": "Agregar personaje",
+        "description": "Crea un nuevo registro. Requiere nombre, universo y nivel_poder.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": ["nombre", "universo", "nivel_poder"],
                 "properties": {
-                  "nombre": { "type": "string", "example": "Goku" },
-                  "universo": { "type": "string", "example": "Dragon Ball" },
-                  "nivel_poder": { "type": "string", "example": "9000" }
+                  "nombre": { "type": "string", "example": "Saitama" },
+                  "universo": { "type": "string", "example": "One Punch Man" },
+                  "nivel_poder": { "type": "string", "example": "Infinito" }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Creado" } }
+        "responses": { "200": { "description": "Creado con éxito" } }
       },
       "patch": {
         "summary": "Editar personaje",
+        "description": "Busca por nombre y actualiza los campos enviados.",
         "requestBody": {
           "required": true,
           "content": {
@@ -39,24 +45,27 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "nombre": { "type": "string", "example": "Goku" },
-                  "universo": { "type": "string", "example": "DB Super" },
-                  "nivel_poder": { "type": "string", "example": "Ultra Instinto" }
+                  "nombre": { "type": "string", "description": "Nombre del personaje a editar", "example": "Saitama" },
+                  "universo": { "type": "string", "example": "Héroe por Hobby" },
+                  "nivel_poder": { "type": "string", "example": "Desconocido" }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Actualizado" } }
+        "responses": { "200": { "description": "Actualizado con éxito" } }
       },
       "delete": {
         "summary": "Eliminar personaje",
+        "description": "Elimina permanentemente a un personaje usando su nombre como ID.",
         "parameters": [
           {
             "name": "nombre",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "description": "Escribe el nombre exacto para borrar",
+            "schema": { "type": "string" },
+            "example": "Saitama"
           }
         ],
         "responses": { "200": { "description": "Eliminado" } }
