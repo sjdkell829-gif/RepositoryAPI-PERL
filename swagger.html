@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Documentación API Anime</title>
+    <title>Documentación API Anime - Registro</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui.css" />
 </head>
 <body>
@@ -14,41 +14,52 @@
                 openapi: "3.0.0",
                 info: {
                     title: "Anime Power API",
-                    version: "2.0.0",
-                    description: "API con Seguridad, Health Check y validación de 3 cifras."
+                    version: "2.5.0",
+                    description: "Usa el botón 'Try it out' para registrar personajes."
                 },
                 paths: {
-                    "/cgi-bin/api.pl/health": {
+                    "/cgi-bin/api.pl": {
+                        "post": {
+                            "summary": "Registrar un nuevo guerrero",
+                            "parameters": [
+                                {
+                                    "name": "X-Auth-Token",
+                                    "in": "header",
+                                    "required": true,
+                                    "description": "Contraseña de admin (admin123)",
+                                    "schema": { "type": "string" }
+                                }
+                            ],
+                            "requestBody": {
+                                "required": true,
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "nombre": { "type": "string", "example": "Goku" },
+                                                "universo": { "type": "string", "example": "Universo 7" },
+                                                "edad": { "type": "integer", "example": 35 },
+                                                "nivel_poder": { "type": "integer", "example": 900 }
+                                            },
+                                            "required": ["nombre", "edad"]
+                                        }
+                                    }
+                                }
+                            },
+                            "responses": {
+                                "201": { "description": "Guerrero guardado exitosamente" }
+                            }
+                        },
                         "get": {
-                            "summary": "Verifica el estado del servidor (Health Check)",
-                            "responses": { "200": { "description": "Servidor en línea" } }
+                            "summary": "Obtener todos los personajes",
+                            "responses": { "200": { "description": "Lista cargada" } }
                         }
                     },
-                    "/cgi-bin/api.pl": {
+                    "/cgi-bin/api.pl/health": {
                         "get": {
-                            "summary": "Obtener lista completa o un guerrero por ID",
-                            "parameters": [{ "name": "id", "in": "query", "schema": { "type": "integer" } }],
-                            "responses": { "200": { "description": "Lista de personajes" } }
-                        },
-                        "post": {
-                            "summary": "Registrar nuevo (Requiere Token)",
-                            "parameters": [{ "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" } }],
-                            "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } },
-                            "responses": { "201": { "description": "Creado" } }
-                        },
-                        "put": {
-                            "summary": "Reemplazo total (Requiere Token)",
-                            "parameters": [{ "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" } }],
-                            "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } },
-                            "responses": { "200": { "description": "Actualizado" } }
-                        },
-                        "delete": {
-                            "summary": "Eliminar por ID (Requiere Token)",
-                            "parameters": [
-                                { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } },
-                                { "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" } }
-                            ],
-                            "responses": { "200": { "description": "Eliminado" } }
+                            "summary": "Check de salud del sistema",
+                            "responses": { "200": { "description": "OK" } }
                         }
                     }
                 }
