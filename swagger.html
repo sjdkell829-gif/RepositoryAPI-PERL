@@ -1,90 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Documentación Interactiva - Anime API</title>
+    <meta charset="UTF-8">
+    <title>Documentación Técnica - Anime API</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui.css" />
+    <style>
+        html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin: 0; background: #fafafa; }
+    </style>
 </head>
 <body>
     <div id="swagger-ui"></div>
+
     <script src="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui-bundle.js"></script>
     <script>
-        const ui = SwaggerUIBundle({
-            dom_id: '#swagger-ui',
-            spec: {
-                openapi: "3.0.0",
-                info: {
-                    title: "Anime Power API - Control Total",
-                    version: "3.0.0",
-                    description: "Panel técnico para gestionar los Guerreros Multiversales."
-                },
-                paths: {
-                    "/cgi-bin/api.pl/health": {
-                        "get": {
-                            "summary": "Check de salud del servidor",
-                            "responses": { "200": { "description": "Servidor activo" } }
-                        }
+        window.onload = function() {
+            const ui = SwaggerUIBundle({
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                spec: {
+                    openapi: "3.0.0",
+                    info: {
+                        title: "Anime Power API - Sistema Admin Z",
+                        version: "3.0.0",
+                        description: "Panel técnico para la gestión avanzada de Guerreros Multiversales. Desarrollado por Erick."
                     },
-                    "/cgi-bin/api.pl": {
-                        "get": {
-                            "summary": "Listar todos o uno por ID",
-                            "parameters": [
-                                { "name": "id", "in": "query", "description": "ID opcional", "schema": { "type": "integer" } }
-                            ],
-                            "responses": { "200": { "description": "Lista de personajes" } }
+                    paths: {
+                        "/cgi-bin/api.pl/health": {
+                            "get": {
+                                "tags": ["Sistema"],
+                                "summary": "Verificar estado del servidor",
+                                "description": "Comprueba si el servidor Perl está activo y si tiene permisos de escritura en la base de datos JSON.",
+                                "responses": {
+                                    "200": { "description": "Servidor funcionando correctamente." }
+                                }
+                            }
                         },
-                        "post": {
-                            "summary": "Registrar un guerrero (POST)",
-                            "parameters": [{ "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" }, "example": "admin123" }],
-                            "requestBody": {
-                                "content": {
-                                    "application/json": {
-                                        "schema": {
-                                            "type": "object",
-                                            "properties": {
-                                                "nombre": { "type": "string" },
-                                                "universo": { "type": "string" },
-                                                "edad": { "type": "integer" },
-                                                "nivel_poder": { "type": "integer" }
+                        "/cgi-bin/api.pl": {
+                            "get": {
+                                "tags": ["Guerreros"],
+                                "summary": "Obtener lista de guerreros",
+                                "description": "Retorna todos los personajes registrados o uno específico si se envía el ID.",
+                                "parameters": [
+                                    { 
+                                        "name": "id", 
+                                        "in": "query", 
+                                        "description": "ID opcional para buscar un solo guerrero", 
+                                        "required": false, 
+                                        "schema": { "type": "integer" } 
+                                    }
+                                ],
+                                "responses": {
+                                    "200": { "description": "Respuesta exitosa (Arreglo de objetos o un objeto)." }
+                                }
+                            },
+                            "post": {
+                                "tags": ["Guerreros"],
+                                "summary": "Registrar un nuevo guerrero",
+                                "description": "Añade un personaje al sistema. El ID y el Rango se calculan automáticamente en el servidor.",
+                                "parameters": [
+                                    { "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" }, "example": "admin123" }
+                                ],
+                                "requestBody": {
+                                    "required": true,
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "nombre": { "type": "string", "example": "Goku" },
+                                                    "universo": { "type": "string", "example": "Universo 7" },
+                                                    "edad": { "type": "integer", "example": 35 },
+                                                    "nivel_poder": { "type": "integer", "example": 9001 }
+                                                },
+                                                "required": ["nombre", "edad"]
                                             }
                                         }
                                     }
+                                },
+                                "responses": {
+                                    "201": { "description": "Guerrero creado con éxito." },
+                                    "401": { "description": "Token inválido o ausente." }
                                 }
                             },
-                            "responses": { "201": { "description": "Creado" } }
-                        },
-                        "put": {
-                            "summary": "Reemplazar un guerrero existente (PUT)",
-                            "parameters": [{ "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" }, "example": "admin123" }],
-                            "requestBody": {
-                                "content": {
-                                    "application/json": {
-                                        "schema": {
-                                            "type": "object",
-                                            "properties": {
-                                                "id": { "type": "integer", "description": "ID del que vas a reemplazar" },
-                                                "nombre": { "type": "string" },
-                                                "universo": { "type": "string" },
-                                                "edad": { "type": "integer" },
-                                                "nivel_poder": { "type": "integer" }
+                            "put": {
+                                "tags": ["Guerreros"],
+                                "summary": "Actualizar un guerrero existente",
+                                "description": "Reemplaza los datos de un guerrero. Es obligatorio enviar el ID en el cuerpo del JSON.",
+                                "parameters": [
+                                    { "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" }, "example": "admin123" }
+                                ],
+                                "requestBody": {
+                                    "required": true,
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": { "type": "integer", "description": "ID del guerrero a modificar", "example": 1 },
+                                                    "nombre": { "type": "string", "example": "Vegeta" },
+                                                    "universo": { "type": "string", "example": "Universo 7" },
+                                                    "edad": { "type": "integer", "example": 40 },
+                                                    "nivel_poder": { "type": "integer", "example": 8500 }
+                                                },
+                                                "required": ["id", "nombre"]
                                             }
                                         }
                                     }
+                                },
+                                "responses": {
+                                    "200": { "description": "Datos actualizados correctamente." },
+                                    "404": { "description": "El ID proporcionado no existe." }
                                 }
                             },
-                            "responses": { "200": { "description": "Actualizado" } }
-                        },
-                        "delete": {
-                            "summary": "Eliminar guerrero por ID",
-                            "parameters": [
-                                { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } },
-                                { "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" }, "example": "admin123" }
-                            ],
-                            "responses": { "200": { "description": "Borrado" } }
+                            "delete": {
+                                "tags": ["Guerreros"],
+                                "summary": "Eliminar un guerrero",
+                                "description": "Elimina permanentemente un registro de la base de datos usando su ID.",
+                                "parameters": [
+                                    { "name": "id", "in": "query", "required": true, "description": "ID del guerrero a borrar", "schema": { "type": "integer" } },
+                                    { "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string" }, "example": "admin123" }
+                                ],
+                                "responses": {
+                                    "200": { "description": "Registro eliminado con éxito." }
+                                }
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+            window.ui = ui;
+        };
     </script>
 </body>
 </html>

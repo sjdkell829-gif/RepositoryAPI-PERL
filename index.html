@@ -13,6 +13,7 @@
         .login-header { background: #212529; color: white; border-radius: 15px 15px 0 0; padding: 15px; }
         .btn-delete { background-color: #ff4d4d; color: white; border: none; }
         .btn-delete:hover { background-color: #cc0000; color: white; }
+        .form-label-custom { font-size: 0.85em; color: #6c757d; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -35,42 +36,31 @@
             </div>
         </div>
 
-        <div class="card p-4 border-info">
-            <h5 class="text-info mb-3">🔍 Buscar Guerrero por ID</h5>
-            <div class="row g-2">
-                <div class="col-md-3">
-                    <input type="number" id="buscar-id" class="form-control" placeholder="ID del Guerrero">
-                </div>
-                <div class="col-md-2">
-                    <button onclick="buscarUno()" class="btn btn-info w-100 text-white">Consultar</button>
-                </div>
-                <div class="col-md-7 d-flex align-items-center ps-3">
-                    <div id="resultado-busqueda" class="fw-bold text-secondary"></div>
-                </div>
-            </div>
-        </div>
-
         <div class="card p-4">
-            <h5 class="text-primary mb-3">📝 Registrar Nuevo Guerrero</h5>
+            <h5 id="form-title" class="text-primary mb-3">📝 Registrar Nuevo Guerrero</h5>
+            <input type="hidden" id="p-id">
+            
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label small text-muted">Nombre</label>
+                    <label class="form-label-custom">Nombre</label>
                     <input type="text" id="p-nombre" class="form-control" placeholder="Ej. Vegeta">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small text-muted">Edad (Máx 3 cifras)</label>
+                    <label class="form-label-custom">Edad (Máx 3 cifras)</label>
                     <input type="number" id="p-edad" class="form-control" oninput="if(value.length>3)value=value.slice(0,3)">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small text-muted">Poder (Máx 3 cifras)</label>
+                    <label class="form-label-custom">Poder (Máx 3 cifras)</label>
                     <input type="number" id="p-poder" class="form-control" oninput="if(value.length>3)value=value.slice(0,3)">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small text-muted">Universo</label>
+                    <label class="form-label-custom">Universo</label>
                     <input type="text" id="p-universo" class="form-control" placeholder="Universo 7">
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button onclick="agregar()" class="btn btn-primary w-100">Guardar</button>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button onclick="enviarDatos('POST')" id="btn-guardar" class="btn btn-primary w-100">Guardar</button>
+                    <button onclick="enviarDatos('PUT')" id="btn-actualizar" class="btn btn-warning w-100 d-none">Actualizar</button>
+                    <button onclick="cancelarEdicion()" id="btn-cancelar" class="btn btn-secondary d-none">✖</button>
                 </div>
             </div>
         </div>
@@ -78,7 +68,7 @@
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="text-success m-0">📋 Lista General de Guerreros</h5>
-                <button onclick="cargarTodos()" class="btn btn-outline-success">🔄 Refrescar Lista</button>
+                <button onclick="cargarTodos()" class="btn btn-outline-success btn-sm">🔄 Refrescar Lista</button>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle text-center">
@@ -106,23 +96,7 @@
     <script>
         const API_URL = '/cgi-bin/api.pl';
 
-        // 1. BUSCAR UNO (GET con parámetro ID)
-        async function buscarUno() {
-            const id = document.getElementById('buscar-id').value;
-            if(!id) return alert("Ingresa un ID");
-            
-            const res = await fetch(`${API_URL}?id=${id}`);
-            const p = await res.json();
-            const resDiv = document.getElementById('resultado-busqueda');
-
-            if(p.error) {
-                resDiv.innerHTML = `<span class="text-danger">❌ ${p.error}</span>`;
-            } else {
-                resDiv.innerHTML = `✅ <b>${p.nombre}</b> | Universo: ${p.universo} | Rango: <span class="badge bg-secondary">${p.rango}</span>`;
-            }
-        }
-
-        // 2. CARGAR TODOS (GET sin parámetros)
+        // 1. CARGAR TODOS LOS GUERREROS
         async function cargarTodos() {
             try {
                 const res = await fetch(API_URL);
@@ -130,29 +104,63 @@
                 const tbody = document.getElementById('tabla-cuerpo');
                 tbody.innerHTML = '';
 
-                if(json.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-muted p-4">No hay personajes registrados actualmente.</td></tr>';
+                if(!json || json.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-muted p-4">No hay personajes registrados.</td></tr>';
                     return;
                 }
 
-                json.data.forEach(p => {
+                json.forEach(p => {
                     tbody.innerHTML += `
                         <tr>
                             <td><span class="id-badge">${p.id}</span></td>
-                            <td><b class="text-dark">${p.nombre}</b><br><small class="text-muted">${p.universo}</small></td>
+                            <td><b class="text-dark">${p.nombre}</b><br><small class="text-muted">${p.universo || 'N/A'}</small></td>
                             <td>${p.edad} años</td>
                             <td><span class="rango-badge bg-light text-dark border">${p.rango}</span></td>
-                            <td><span class="badge bg-warning text-dark">${p.nivel_poder}</span></td>
+                            <td><span class="badge bg-warning text-dark">${p.nivel_poder || 0}</span></td>
                             <td>
+                                <button onclick='prepararEdicion(${JSON.stringify(p)})' class="btn btn-sm btn-outline-warning me-1">Editar</button>
                                 <button onclick="borrar(${p.id})" class="btn btn-sm btn-delete">Eliminar</button>
                             </td>
                         </tr>`;
                 });
-            } catch (e) { console.error("Error cargando tabla:", e); }
+            } catch (e) { 
+                console.error("Error:", e); 
+            }
         }
 
-        // 3. AGREGAR (POST con validación de contraseña)
-        async function agregar() {
+        // 2. PREPARAR EL FORMULARIO PARA EDITAR (PUT)
+        function prepararEdicion(p) {
+            document.getElementById('form-title').innerText = "✏️ Editando Guerrero #" + p.id;
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-nombre').value = p.nombre;
+            document.getElementById('p-edad').value = p.edad;
+            document.getElementById('p-poder').value = p.nivel_poder;
+            document.getElementById('p-universo').value = p.universo;
+
+            // Cambiar botones
+            document.getElementById('btn-guardar').classList.add('d-none');
+            document.getElementById('btn-actualizar').classList.remove('d-none');
+            document.getElementById('btn-cancelar').classList.remove('d-none');
+            
+            window.scrollTo(0, 0); // Sube la pantalla al formulario
+        }
+
+        // 3. CANCELAR EDICIÓN
+        function cancelarEdicion() {
+            document.getElementById('form-title').innerText = "📝 Registrar Nuevo Guerrero";
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-nombre').value = '';
+            document.getElementById('p-edad').value = '';
+            document.getElementById('p-poder').value = '';
+            document.getElementById('p-universo').value = '';
+
+            document.getElementById('btn-guardar').classList.remove('d-none');
+            document.getElementById('btn-actualizar').classList.add('d-none');
+            document.getElementById('btn-cancelar').classList.add('d-none');
+        }
+
+        // 4. ENVIAR DATOS (POST o PUT)
+        async function enviarDatos(metodo) {
             const pass = document.getElementById('pass').value;
             const data = {
                 nombre: document.getElementById('p-nombre').value,
@@ -161,10 +169,14 @@
                 universo: document.getElementById('p-universo').value
             };
 
+            if(metodo === 'PUT') {
+                data.id = parseInt(document.getElementById('p-id').value);
+            }
+
             if(!data.nombre || isNaN(data.edad)) return alert("Nombre y Edad son obligatorios");
 
             const res = await fetch(API_URL, { 
-                method: 'POST', 
+                method: metodo, 
                 headers: { 
                     'X-Auth-Token': pass,
                     'Content-Type': 'application/json'
@@ -176,20 +188,16 @@
             if(result.error) {
                 alert("❌ Error: " + result.error);
             } else {
-                // Limpiar formulario y recargar
-                document.getElementById('p-nombre').value = '';
-                document.getElementById('p-edad').value = '';
-                document.getElementById('p-poder').value = '';
-                document.getElementById('p-universo').value = '';
+                cancelarEdicion();
                 cargarTodos();
-                alert("✅ Guerrero registrado con éxito");
+                alert(metodo === 'POST' ? "✅ Registrado" : "✅ Actualizado");
             }
         }
 
-        // 4. BORRAR (DELETE con ID en URL y contraseña en Header)
+        // 5. ELIMINAR (DELETE)
         async function borrar(id) {
             const pass = document.getElementById('pass').value;
-            if(!confirm(`¿Estás seguro de eliminar al ID #${id}?`)) return;
+            if(!confirm(`¿Eliminar al guerrero #${id}?`)) return;
 
             const res = await fetch(`${API_URL}?id=${id}`, { 
                 method: 'DELETE',
@@ -201,7 +209,7 @@
             else cargarTodos();
         }
 
-        // Carga inicial
+        // Carga inicial al abrir la página
         window.onload = cargarTodos;
     </script>
 </body>

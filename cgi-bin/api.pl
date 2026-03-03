@@ -3,100 +3,94 @@ use strict;
 use warnings;
 use CGI;
 use JSON;
+use File::Slurp;
 
 my $cgi = CGI->new;
-my $archivo = '/usr/lib/cgi-bin/datos.json';
-my $PASSWORD_MAESTRA = "admin123";
+my $metodo = $cgi->request_method();
+my $token_cliente = $cgi->http('X-Auth-Token') || "";
+my $token_maestro = "admin123";
+my $ruta_db = "datos.json";
 
-# --- ENDPOINT DE SALUD (HEALTH CHECK) ---
-if ($cgi->path_info() =~ /health/) {
-    print $cgi->header('application/json');
-    my $writable = -w $archivo ? "Si" : "No";
-    print encode_json({
-        status => "UP",
-        database_writable => $writable,
-        version => "2.0.0",
-        timestamp => time()
-    });
-    exit;
-}
+print $cgi->header(
+    -type => 'application/json',
+    -access_control_allow_origin => '*',
+    -access_control_allow_methods => 'GET, POST, PUT, DELETE, OPTIONS',
+    -access_control_allow_headers => 'Content-Type, X-Auth-Token'
+);
 
-print $cgi->header('application/json; charset=UTF-8');
+exit if $metodo eq 'OPTIONS';
 
 sub leer_db {
-    if (!-e $archivo) { return { data => [] }; }
-    open my $fh, '<', $archivo or return { data => [] };
-    my $content = do { local $/; <$fh> };
-    close $fh;
-    return $content ? decode_json($content) : { data => [] };
+    if (-e $ruta_db) {
+        my $contenido = read_file($ruta_db);
+        return decode_json($contenido || '[]');
+    }
+    return [];
 }
 
 sub guardar_db {
-    my ($datos) = @_;
-    open my $fh, '>', $archivo;
-    print $fh encode_json($datos);
-    close $fh;
+    my ($data) = @_;
+    write_file($ruta_db, encode_json($data));
 }
 
 sub clasificar_rango {
-    my ($edad) = @_;
-    if ($edad < 18) { return "Joven"; }
-    if ($edad < 100) { return "Adulto"; }
-    return "Legendario (No Humano)";
+    my $edad = shift || 0;
+    return "Legendario" if $edad >= 100;
+    return "Adulto"     if $edad >= 18;
+    return "Joven";
 }
 
-my $db = leer_db();
-my $metodo = $cgi->request_method();
-
-# SEGURIDAD: Validar token en métodos de escritura
-if ($metodo =~ /^(POST|PUT|PATCH|DELETE)$/) {
-    my $auth = $cgi->http('HTTP_X_AUTH_TOKEN') || ""; 
-    if ($auth ne $PASSWORD_MAESTRA) {
-        print encode_json({ error => "Acceso denegado. Se requiere contraseña." });
-        exit;
-    }
+my $path_info = $cgi->path_info();
+if ($path_info eq '/health') {
+    print encode_json({ status => "UP", db_writable => (-w $ruta_db ? "Si" : "No") });
+    exit;
 }
 
-# --- MANEJO DE RUTAS ---
+if ($metodo ne 'GET' && $token_cliente ne $token_maestro) {
+    print encode_json({ error => "Acceso denegado. Token invalido." });
+    exit;
+}
+
+my $personajes = leer_db();
+
 if ($metodo eq 'GET') {
-    my $id = $cgi->param('id');
-    if ($id) {
-        my ($p) = grep { $_->{id} == $id } @{$db->{data}};
-        print encode_json($p || { error => "No encontrado" });
+    my $id_buscado = $cgi->param('id');
+    if ($id_buscado) {
+        my ($p) = grep { $_->{id} == $id_buscado } @$personajes;
+        print encode_json($p || { error => "ID no encontrado" });
     } else {
-        print encode_json($db);
+        print encode_json($personajes);
     }
-} 
+}
 elsif ($metodo eq 'POST') {
     my $nuevo = decode_json($cgi->param('POSTDATA'));
-    if ($nuevo->{edad} > 999 || $nuevo->{nivel_poder} > 999) {
-        print encode_json({ error => "Máximo 3 cifras permitidas" }); exit;
-    }
-    $nuevo->{rango} = clasificar_rango($nuevo->{edad} || 0);
-    my $max_id = 0;
-    foreach my $p (@{$db->{data}}) { $max_id = $p->{id} if $p->{id} > $max_id; }
-    $nuevo->{id} = $max_id + 1;
-    push @{$db->{data}}, $nuevo;
-    guardar_db($db);
+    $nuevo->{id} = (scalar @$personajes > 0) ? $personajes->[-1]->{id} + 1 : 1;
+    $nuevo->{rango} = clasificar_rango($nuevo->{edad});
+    push @$personajes, $nuevo;
+    guardar_db($personajes);
     print encode_json({ status => "Creado", id => $nuevo->{id} });
-} 
+}
 elsif ($metodo eq 'PUT') {
-    my $update = decode_json($cgi->param('POSTDATA'));
-    my $hecho = 0;
-    for (my $i = 0; $i < @{$db->{data}}; $i++) {
-        if ($db->{data}[$i]{id} == $update->{id}) {
-            $update->{rango} = clasificar_rango($update->{edad} || 0);
-            $db->{data}[$i] = $update; # Reemplazo total
-            $hecho = 1; last;
+    my $editado = decode_json($cgi->param('POSTDATA'));
+    my $encontrado = 0;
+    for (my $i = 0; $i < @$personajes; $i++) {
+        if ($personajes->[$i]->{id} == $editado->{id}) {
+            $editado->{rango} = clasificar_rango($editado->{edad});
+            $personajes->[$i] = $editado;
+            $encontrado = 1;
+            last;
         }
     }
-    guardar_db($db) if $hecho;
-    print encode_json({ status => $hecho ? "Reemplazado (PUT)" : "ID no existe" });
+    if ($encontrado) {
+        guardar_db($personajes);
+        print encode_json({ status => "Actualizado", id => $editado->{id} });
+    } else {
+        print encode_json({ error => "ID no encontrado" });
+    }
 }
 elsif ($metodo eq 'DELETE') {
-    my $id = $cgi->param('id');
-    my @lista = grep { $_->{id} != $id } @{$db->{data}};
-    $db->{data} = \@lista;
-    guardar_db($db);
-    print encode_json({ status => "Eliminado" });
+    my $id_borrar = $cgi->param('id');
+    my @filtrados = grep { $_->{id} != $id_borrar } @$personajes;
+    guardar_db(\@filtrados);
+    print encode_json({ status => "Eliminado", id => $id_borrar });
 }

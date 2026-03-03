@@ -1,46 +1,40 @@
-# 1. Usamos una imagen estable de Debian
-FROM debian:bullseye
+# 1. Usamos la imagen oficial de Apache (servidor web)
+FROM httpd:2.4
 
-# 2. Instalamos Apache, Perl y las librerías para manejar JSON y CGI
-RUN apt-get update && \
-    apt-get install -y apache2 perl libcgi-pm-perl libjson-perl && \
-    apt-get clean
+# 2. Instalamos Perl y las librerías necesarias para manejar JSON y archivos
+# libjson-perl: para que Perl entienda el formato JSON
+# libfile-slurp-perl: para leer y escribir archivos de forma rápida
+RUN apt-get update && apt-get install -y \
+    perl \
+    libjson-perl \
+    libfile-slurp-perl \
+    && rm -rf /var/lib/apt/lists/*
 
-# 3. ACTIVAR MÓDULOS CRÍTICOS
-# cgid: Para ejecutar Perl
-# headers: Para permitir PATCH y evitar errores de CORS si pruebas desde fuera
-RUN a2enmod cgid
-RUN a2enmod headers
+# 3. Configuramos Apache para que permita ejecutar archivos .pl (CGI)
+# Activamos el módulo CGI
+RUN sed -i 's/#LoadModule cgi_module/LoadModule cgi_module/' /usr/local/apache2/conf/httpd.conf
 
-# 4. CONFIGURAR APACHE PARA PERMITIR TODO
-# Esto evita el error "Not Found" y permite que el PATCH funcione
-RUN echo "<Directory /var/www/html>\n\
-    Options Indexes FollowSymLinks\n\
-    AllowOverride All\n\
-    Require all granted\n\
-    DirectoryIndex index.html\n\
-</Directory>" > /etc/apache2/conf-available/custom-access.conf && \
-    a2enconf custom-access
+# Le decimos que los archivos .pl se traten como scripts
+RUN echo "AddHandler cgi-script .pl" >> /usr/local/apache2/conf/httpd.conf
 
-# 5. LIMPIAR Y COPIAR ARCHIVOS
-RUN rm -rf /var/www/html/*
+# Damos permiso de ejecución (ExecCGI) en la carpeta de htdocs y cgi-bin
+RUN sed -i 's/Options Indexes FollowSymLinks/Options Indexes FollowSymLinks ExecCGI/' /usr/local/apache2/conf/httpd.conf
 
-# Copiamos la interfaz y la documentación a la raíz
-COPY index.html /var/www/html/index.html
-COPY swagger.html /var/www/html/swagger.html
-COPY swagger.json /var/www/html/swagger.json
+# 4. Copiamos tus archivos al contenedor
+# Los HTML van a la carpeta pública htdocs
+COPY ./index.html /usr/local/apache2/htdocs/
+COPY ./swagger.html /usr/local/apache2/htdocs/
 
-# Copiamos los scripts de Perl y la base de datos a cgi-bin
-COPY ./cgi-bin/ /usr/lib/cgi-bin/
+# El script de Perl va a la carpeta especial cgi-bin
+COPY ./cgi-bin/ /usr/local/apache2/cgi-bin/
 
-# 6. PERMISOS DE SEGURIDAD Y ESCRITURA
-# Permiso de ejecución para el script
-RUN chmod +x /usr/lib/cgi-bin/api.pl
-# Permiso total a la carpeta cgi-bin para que Perl pueda escribir archivos
-RUN chmod 777 /usr/lib/cgi-bin
-# Permiso de lectura/escritura para la base de datos JSON
-RUN chmod 666 /usr/lib/cgi-bin/datos.json
+# 5. Permisos de seguridad y escritura
+# Hacemos que el script de Perl sea ejecutable
+RUN chmod +x /usr/local/apache2/cgi-bin/api.pl
 
-# 7. EXPONER PUERTO Y LANZAR
+# Creamos el archivo de base de datos vacío y le damos permisos totales (777)
+# Esto es vital para que el servidor pueda guardar los cambios del POST y PUT
+RUN touch /usr/local/apache2/cgi-bin/datos.json && chmod 777 /usr/local/apache2/cgi-bin/datos.json
+
+# 6. Exponemos el puerto 80 (estándar web)
 EXPOSE 80
-CMD ["apachectl", "-D", "FOREGROUND"]
