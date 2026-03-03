@@ -8,6 +8,19 @@ my $cgi = CGI->new;
 my $archivo = '/usr/lib/cgi-bin/datos.json';
 my $PASSWORD_MAESTRA = "admin123";
 
+# --- ENDPOINT DE SALUD (HEALTH CHECK) ---
+if ($cgi->path_info() =~ /health/) {
+    print $cgi->header('application/json');
+    my $writable = -w $archivo ? "Si" : "No";
+    print encode_json({
+        status => "UP",
+        database_writable => $writable,
+        version => "2.0.0",
+        timestamp => time()
+    });
+    exit;
+}
+
 print $cgi->header('application/json; charset=UTF-8');
 
 sub leer_db {
@@ -20,7 +33,7 @@ sub leer_db {
 
 sub guardar_db {
     my ($datos) = @_;
-    open my $fh, '>', $archivo or die "No se pudo guardar: $!";
+    open my $fh, '>', $archivo;
     print $fh encode_json($datos);
     close $fh;
 }
@@ -35,16 +48,16 @@ sub clasificar_rango {
 my $db = leer_db();
 my $metodo = $cgi->request_method();
 
-# SEGURIDAD
-if ($metodo ne 'GET') {
+# SEGURIDAD: Validar token en métodos de escritura
+if ($metodo =~ /^(POST|PUT|PATCH|DELETE)$/) {
     my $auth = $cgi->http('HTTP_X_AUTH_TOKEN') || ""; 
     if ($auth ne $PASSWORD_MAESTRA) {
-        print encode_json({ error => "Acceso denegado" });
+        print encode_json({ error => "Acceso denegado. Se requiere contraseña." });
         exit;
     }
 }
 
-# RUTAS
+# --- MANEJO DE RUTAS ---
 if ($metodo eq 'GET') {
     my $id = $cgi->param('id');
     if ($id) {
@@ -56,43 +69,29 @@ if ($metodo eq 'GET') {
 } 
 elsif ($metodo eq 'POST') {
     my $nuevo = decode_json($cgi->param('POSTDATA'));
-    
-    # ASEGURAR QUE LA EDAD EXISTA Y SEA NÚMERO
-    my $edad = int($nuevo->{edad} || 0);
-    if ($edad > 999) {
-        print encode_json({ error => "Edad demasiado alta" });
-        exit;
+    if ($nuevo->{edad} > 999 || $nuevo->{nivel_poder} > 999) {
+        print encode_json({ error => "Máximo 3 cifras permitidas" }); exit;
     }
-
-    # ASIGNAR VALORES AL OBJETO QUE SE GUARDARÁ
-    $nuevo->{edad} = $edad;
-    $nuevo->{rango} = clasificar_rango($edad);
-    
+    $nuevo->{rango} = clasificar_rango($nuevo->{edad} || 0);
     my $max_id = 0;
     foreach my $p (@{$db->{data}}) { $max_id = $p->{id} if $p->{id} > $max_id; }
     $nuevo->{id} = $max_id + 1;
-    
     push @{$db->{data}}, $nuevo;
     guardar_db($db);
-    print encode_json({ status => "Creado", id => $nuevo->{id}, rango => $nuevo->{rango} });
-}
-elsif ($metodo eq 'PATCH') {
+    print encode_json({ status => "Creado", id => $nuevo->{id} });
+} 
+elsif ($metodo eq 'PUT') {
     my $update = decode_json($cgi->param('POSTDATA'));
     my $hecho = 0;
-    foreach my $p (@{$db->{data}}) {
-        if ($p->{id} == $update->{id}) {
-            $p->{nombre} = $update->{nombre} if $update->{nombre};
-            $p->{universo} = $update->{universo} if $update->{universo};
-            $p->{nivel_poder} = $update->{nivel_poder} if $update->{nivel_poder};
-            if ($update->{edad}) {
-                $p->{edad} = int($update->{edad});
-                $p->{rango} = clasificar_rango($p->{edad});
-            }
+    for (my $i = 0; $i < @{$db->{data}}; $i++) {
+        if ($db->{data}[$i]{id} == $update->{id}) {
+            $update->{rango} = clasificar_rango($update->{edad} || 0);
+            $db->{data}[$i] = $update; # Reemplazo total
             $hecho = 1; last;
         }
     }
     guardar_db($db) if $hecho;
-    print encode_json({ status => $hecho ? "Ok" : "No encontrado" });
+    print encode_json({ status => $hecho ? "Reemplazado (PUT)" : "ID no existe" });
 }
 elsif ($metodo eq 'DELETE') {
     my $id = $cgi->param('id');
