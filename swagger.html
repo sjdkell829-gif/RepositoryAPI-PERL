@@ -2,23 +2,18 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Documentación API - Anime CRUD</title>
+    <title>Swagger UI - Anime API</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
 </head>
 <body>
     <div id="swagger-ui"></div>
-
     <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
     <script>
         window.onload = () => {
             window.ui = SwaggerUIBundle({
-                // AQUÍ indicamos que lea tu archivo swagger.json
-                url: "swagger.json", 
+                url: "swagger.json",
                 dom_id: '#swagger-ui',
-                presets: [
-                    SwaggerUIBundle.presets.apis,
-                    SwaggerUIBundle.SwaggerUIStandalonePreset
-                ],
+                presets: [SwaggerUIBundle.presets.apis],
                 layout: "BaseLayout"
             });
         };

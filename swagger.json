@@ -1,18 +1,18 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Anime Power API CRUD",
-    "description": "API interactiva para gestionar personajes de anime",
-    "version": "1.0.0"
+    "title": "Anime Power API",
+    "version": "1.0.0",
+    "description": "CRUD completo de personajes"
   },
   "paths": {
     "/cgi-bin/api.pl": {
       "get": {
-        "summary": "Obtener lista de personajes",
-        "responses": { "200": { "description": "Lista obtenida" } }
+        "summary": "Listar personajes",
+        "responses": { "200": { "description": "OK" } }
       },
       "post": {
-        "summary": "Agregar personaje nuevo",
+        "summary": "Agregar personaje",
         "requestBody": {
           "required": true,
           "content": {
@@ -20,9 +20,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "nombre": { "type": "string", "example": "Shadow" },
-                  "universo": { "type": "string", "example": "The Eminence in Shadow" },
-                  "nivel_poder": { "type": "string", "example": "I am Atomic" }
+                  "nombre": { "type": "string", "example": "Goku" },
+                  "universo": { "type": "string", "example": "Dragon Ball" },
+                  "nivel_poder": { "type": "string", "example": "9000" }
                 }
               }
             }
@@ -31,7 +31,7 @@
         "responses": { "200": { "description": "Creado" } }
       },
       "patch": {
-        "summary": "Editar personaje (PATCH)",
+        "summary": "Editar personaje",
         "requestBody": {
           "required": true,
           "content": {
@@ -39,9 +39,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "nombre": { "type": "string", "example": "Shadow" },
-                  "universo": { "type": "string", "example": "Nuevo Universo" },
-                  "nivel_poder": { "type": "string", "example": "Nuevo Poder" }
+                  "nombre": { "type": "string", "example": "Goku" },
+                  "universo": { "type": "string", "example": "DB Super" },
+                  "nivel_poder": { "type": "string", "example": "Ultra Instinto" }
                 }
               }
             }
@@ -56,7 +56,6 @@
             "name": "nombre",
             "in": "query",
             "required": true,
-            "description": "Nombre exacto del personaje a borrar",
             "schema": { "type": "string" }
           }
         ],
