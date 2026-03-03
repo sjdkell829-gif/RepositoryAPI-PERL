@@ -1,56 +1,75 @@
-# RepositoryAPI-PERL
-Anime Power Levels API - Full Stack Deployment
-Descripción del Proyecto
-Este proyecto consiste en el desarrollo y despliegue de una aplicación web diseñada para la gestión de estadísticas y niveles de poder de personajes de anime. La solución integra un frontend dinámico con un backend robusto basado en scripts CGI de Perl, todo contenido dentro de un entorno virtualizado con Docker para garantizar su portabilidad y escalabilidad.
+Documentacion Tecnica: Anime Power - Sistema Admin Z
+Enlaces del Proyecto
+Interfaz de Usuario: https://anime-power-api.onrender.com/index.html
 
-Enlace del Proyecto
-El sistema se encuentra desplegado y operativo en la siguiente dirección:
-URL: https://repositoryapi-perl.onrender.com
+Documentacion Interactiva (Swagger): https://anime-power-api.onrender.com/swagger.html
 
-Arquitectura del Sistema
-La aplicación sigue una arquitectura de tres capas dentro de un contenedor:
+Descripcion del Proyecto
+Este sistema consiste en una API RESTful desarrollada en lenguaje Perl para la gestion de personajes de anime. El proyecto permite realizar operaciones CRUD completas y almacena la informacion en un archivo con formato JSON, garantizando la persistencia de los datos en el servidor sin necesidad de bases de datos externas.
 
-Capa de Presentación: Interfaz desarrollada en HTML5 y JavaScript que consume la API mediante peticiones asíncronas (Fetch API).
+Funcionalidades del Sistema
+Metodos HTTP Soportados: Implementacion de los verbos GET, POST, PUT y DELETE.
 
-Capa de Lógica (Backend): Scripts en lenguaje Perl ejecutados bajo el servidor Apache (módulo cgid) que procesan las operaciones de lectura y escritura.
+Clasificacion Automatica: Asignacion de rango (Joven, Adulto, Legendario) basada en la edad procesada en el servidor.
 
-Capa de Datos: Almacenamiento basado en archivos con formato JSON (datos.json) que actúa como base de datos persistente durante la ejecución del contenedor.
+Control de Integridad: Validacion de longitud de datos para campos numericos con un limite de 3 cifras (0-999).
 
-Stack Tecnológico
-Contenedores: Docker (Imagen base Debian Bullseye).
+Health Check: Endpoint dedicado para monitorear el estado operativo del servidor y los permisos de escritura del sistema.
 
-Servidor Web: Apache 2.4 con configuración de directorios CGI.
+Persistencia JSON: Almacenamiento directo en servidor que permite mantener los datos tras reinicios del servicio.
 
-Lenguaje de Backend: Perl 5 (Módulos: CGI, JSON).
+Estructura de Archivos
+index.html: Panel de control y gestion visual para el usuario final.
 
-Frontend: JavaScript ES6+, CSS3 y HTML5.
+swagger.html: Especificacion OpenAPI y herramientas de prueba para desarrolladores.
 
-Configuración y Despliegue Local
-Para replicar este entorno de desarrollo de manera local, siga las instrucciones a continuación:
+cgi-bin/api.pl: Script de servidor encargado del procesamiento de peticiones y logica de negocio.
 
-Requisitos previos
-Docker Desktop instalado y en ejecución.
+cgi-bin/datos.json: Archivo de almacenamiento persistente.
 
-Git para la clonación del repositorio.
+Autenticacion y Seguridad
+Las operaciones que modifican la integridad de los datos (POST, PUT y DELETE) requieren la validacion de una cabecera de seguridad obligatoria:
 
-Instrucciones de ejecución
-Clonación del repositorio:
+Cabecera: X-Auth-Token
 
-Bash
-git clone https://github.com/tu-usuario/RepositoryAPI-PERL.git
-cd RepositoryAPI-PERL
-Construcción de la imagen Docker:
+Valor: admin123
 
-Bash
-docker build -t anime-api-perl .
-Lanzamiento del contenedor:
+Especificacion de Endpoints
+Metodo GET (Listado General)
+Ruta: /cgi-bin/api.pl
 
-Bash
-docker run -p 8080:80 anime-api-perl
-Acceso: El servicio estará disponible en http://localhost:8080.
+Descripcion: Recupera la coleccion completa de guerreros almacenados.
 
-Notas sobre el Despliegue en Render
-Se debe tener en cuenta que el entorno de hosting utilizado (Render Free Tier) emplea un sistema de archivos efímero. Esto significa que los registros de personajes nuevos realizados a través de la interfaz se mantendrán activos mientras el contenedor esté en ejecución, pero se restablecerán a los valores por defecto (como Saitama o Goku) en caso de reinicio o suspensión del servicio.
+Metodo GET (Consulta Individual)
+Ruta: /cgi-bin/api.pl?id={valor}
 
-Información del Autor
-Desarrollador: Erick.
+Descripcion: Recupera la informacion de un unico registro filtrado por su ID.
+
+Metodo GET (Salud del Sistema)
+Ruta: /cgi-bin/api.pl/health
+
+Descripcion: Informa el estado del servidor y si el archivo JSON tiene permisos de escritura.
+
+Metodo POST (Registro)
+Ruta: /cgi-bin/api.pl
+
+Descripcion: Registra un nuevo guerrero. Requiere cuerpo JSON y token de seguridad.
+
+Metodo PUT (Actualizacion)
+Ruta: /cgi-bin/api.pl
+
+Descripcion: Reemplaza un registro existente de forma total. Requiere ID dentro del JSON y token de seguridad.
+
+Metodo DELETE (Eliminacion)
+Ruta: /cgi-bin/api.pl?id={valor}
+
+Descripcion: Remueve permanentemente un registro del sistema. Requiere token de seguridad.
+
+Requisitos de Implementacion
+El servidor debe contar con Perl 5 y soporte para Common Gateway Interface (CGI).
+
+Es indispensable configurar permisos de escritura (chmod 777) para el archivo datos.json en el entorno de despliegue.
+
+La configuracion de red debe permitir el paso de cabeceras personalizadas (Custom Headers).
+
+Desarrollado por: Erick
