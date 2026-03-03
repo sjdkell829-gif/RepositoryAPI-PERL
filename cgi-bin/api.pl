@@ -20,74 +20,79 @@ sub leer_db {
 
 sub guardar_db {
     my ($datos) = @_;
-    open my $fh, '>', $archivo;
+    open my $fh, '>', $archivo or die "No se pudo guardar: $!";
     print $fh encode_json($datos);
     close $fh;
 }
 
 sub clasificar_rango {
     my ($edad) = @_;
-    return $edad < 18 ? "Joven" : $edad < 100 ? "Adulto" : "Legendario (No Humano)";
+    if ($edad < 18) { return "Joven"; }
+    if ($edad < 100) { return "Adulto"; }
+    return "Legendario (No Humano)";
 }
 
 my $db = leer_db();
 my $metodo = $cgi->request_method();
 
-# --- SEGURIDAD ---
+# SEGURIDAD
 if ($metodo ne 'GET') {
     my $auth = $cgi->http('HTTP_X_AUTH_TOKEN') || ""; 
     if ($auth ne $PASSWORD_MAESTRA) {
-        print encode_json({ error => "Acceso denegado. Contraseña incorrecta." });
+        print encode_json({ error => "Acceso denegado" });
         exit;
     }
 }
 
-# --- RUTAS ---
+# RUTAS
 if ($metodo eq 'GET') {
-    my $id_buscado = $cgi->param('id');
-    if ($id_buscado) {
-        # GET Individual: Busca solo uno
-        my ($encontrado) = grep { $_->{id} == $id_buscado } @{$db->{data}};
-        print encode_json($encontrado || { error => "Guerrero no encontrado" });
+    my $id = $cgi->param('id');
+    if ($id) {
+        my ($p) = grep { $_->{id} == $id } @{$db->{data}};
+        print encode_json($p || { error => "No encontrado" });
     } else {
-        # GET General: Muestra todos
         print encode_json($db);
     }
 } 
 elsif ($metodo eq 'POST') {
     my $nuevo = decode_json($cgi->param('POSTDATA'));
     
-    # Validaciones de 3 cifras y existencia de edad
-    if (!$nuevo->{edad} || $nuevo->{edad} > 999 || ($nuevo->{nivel_poder} && $nuevo->{nivel_poder} > 999)) {
-        print encode_json({ error => "Datos inválidos (Máximo 3 cifras)" });
+    # ASEGURAR QUE LA EDAD EXISTA Y SEA NÚMERO
+    my $edad = int($nuevo->{edad} || 0);
+    if ($edad > 999) {
+        print encode_json({ error => "Edad demasiado alta" });
         exit;
     }
 
-    $nuevo->{rango} = clasificar_rango($nuevo->{edad});
+    # ASIGNAR VALORES AL OBJETO QUE SE GUARDARÁ
+    $nuevo->{edad} = $edad;
+    $nuevo->{rango} = clasificar_rango($edad);
+    
     my $max_id = 0;
     foreach my $p (@{$db->{data}}) { $max_id = $p->{id} if $p->{id} > $max_id; }
     $nuevo->{id} = $max_id + 1;
     
     push @{$db->{data}}, $nuevo;
     guardar_db($db);
-    print encode_json({ status => "Creado", id => $nuevo->{id} });
+    print encode_json({ status => "Creado", id => $nuevo->{id}, rango => $nuevo->{rango} });
 }
-# (PATCH y DELETE se mantienen igual con la validación de X-Auth-Token)
 elsif ($metodo eq 'PATCH') {
     my $update = decode_json($cgi->param('POSTDATA'));
+    my $hecho = 0;
     foreach my $p (@{$db->{data}}) {
         if ($p->{id} == $update->{id}) {
             $p->{nombre} = $update->{nombre} if $update->{nombre};
-            if ($update->{edad}) {
-                $p->{edad} = $update->{edad};
-                $p->{rango} = clasificar_rango($update->{edad});
-            }
+            $p->{universo} = $update->{universo} if $update->{universo};
             $p->{nivel_poder} = $update->{nivel_poder} if $update->{nivel_poder};
-            last;
+            if ($update->{edad}) {
+                $p->{edad} = int($update->{edad});
+                $p->{rango} = clasificar_rango($p->{edad});
+            }
+            $hecho = 1; last;
         }
     }
-    guardar_db($db);
-    print encode_json({ status => "Ok" });
+    guardar_db($db) if $hecho;
+    print encode_json({ status => $hecho ? "Ok" : "No encontrado" });
 }
 elsif ($metodo eq 'DELETE') {
     my $id = $cgi->param('id');

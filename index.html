@@ -2,98 +2,156 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Anime API - Sistema Completo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Power - Sistema Admin Z</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 20px; }
-        .card { border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: none; }
-        .id-destacado { color: #0d6efd; font-weight: bold; font-size: 1.2em; }
+        body { background-color: #f4f7f6; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .id-badge { background-color: #0d6efd; color: white; padding: 5px 12px; border-radius: 8px; font-weight: bold; }
+        .rango-badge { font-size: 0.85em; padding: 5px 10px; border-radius: 20px; font-weight: 500; }
+        .login-header { background: #212529; color: white; border-radius: 15px 15px 0 0; padding: 15px; }
+        .btn-delete { background-color: #ff4d4d; color: white; border: none; }
+        .btn-delete:hover { background-color: #cc0000; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 class="text-center mb-4">🐉 Panel de Guerreros Z</h2>
+        <h1 class="text-center mb-5">⚔️ Gestión de Guerreros Multiversales</h1>
 
-        <div class="card p-3 bg-light border-start border-primary border-5">
-            <div class="row align-items-center">
-                <div class="col-md-9"><strong>Modo Administrador:</strong> Ingresa la clave para realizar cambios.</div>
-                <div class="col-md-3"><input type="password" id="pass" class="form-control" placeholder="Contraseña"></div>
+        <div class="card mb-4">
+            <div class="login-header">
+                <h6 class="m-0">🔑 Control de Acceso Administrador</h6>
+            </div>
+            <div class="card-body bg-light">
+                <div class="row align-items-center">
+                    <div class="col-md-8 text-muted small">
+                        Se requiere contraseña para <b>Registrar, Editar o Eliminar</b>. La visualización es pública.
+                    </div>
+                    <div class="col-md-4">
+                        <input type="password" id="pass" class="form-control" placeholder="Contraseña (admin123)">
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card p-4">
-            <h6 class="text-secondary">🔍 Buscar Guerrero Específico</h6>
+        <div class="card p-4 border-info">
+            <h5 class="text-info mb-3">🔍 Buscar Guerrero por ID</h5>
             <div class="row g-2">
-                <div class="col-md-4"><input type="number" id="buscar-id" class="form-control" placeholder="Ingresa ID del guerrero"></div>
-                <div class="col-md-2"><button onclick="buscarUno()" class="btn btn-info w-100 text-white">Buscar</button></div>
-                <div id="resultado-busqueda" class="col-md-6 pt-2"></div>
+                <div class="col-md-3">
+                    <input type="number" id="buscar-id" class="form-control" placeholder="ID del Guerrero">
+                </div>
+                <div class="col-md-2">
+                    <button onclick="buscarUno()" class="btn btn-info w-100 text-white">Consultar</button>
+                </div>
+                <div class="col-md-7 d-flex align-items-center ps-3">
+                    <div id="resultado-busqueda" class="fw-bold text-secondary"></div>
+                </div>
             </div>
         </div>
 
         <div class="card p-4">
-            <h6 class="text-primary">📝 Registrar Nuevo Personaje</h6>
-            <div class="row g-2">
-                <div class="col-md-3"><input type="text" id="p-nombre" class="form-control" placeholder="Nombre"></div>
-                <div class="col-md-2"><input type="number" id="p-edad" class="form-control" placeholder="Edad" oninput="limit3(this)"></div>
-                <div class="col-md-2"><input type="number" id="p-poder" class="form-control" placeholder="Poder" oninput="limit3(this)"></div>
-                <div class="col-md-3"><input type="text" id="p-universo" class="form-control" placeholder="Universo"></div>
-                <div class="col-md-2"><button onclick="agregar()" class="btn btn-primary w-100">Guardar</button></div>
+            <h5 class="text-primary mb-3">📝 Registrar Nuevo Guerrero</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Nombre</label>
+                    <input type="text" id="p-nombre" class="form-control" placeholder="Ej. Vegeta">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Edad (Máx 3 cifras)</label>
+                    <input type="number" id="p-edad" class="form-control" oninput="if(value.length>3)value=value.slice(0,3)">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Poder (Máx 3 cifras)</label>
+                    <input type="number" id="p-poder" class="form-control" oninput="if(value.length>3)value=value.slice(0,3)">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Universo</label>
+                    <input type="text" id="p-universo" class="form-control" placeholder="Universo 7">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button onclick="agregar()" class="btn btn-primary w-100">Guardar</button>
+                </div>
             </div>
         </div>
 
         <div class="card p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <h5>📋 Lista de Todos los Guerreros</h5>
-                <button onclick="cargarTodos()" class="btn btn-success">🔄 Actualizar Lista</button>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-success m-0">📋 Lista General de Guerreros</h5>
+                <button onclick="cargarTodos()" class="btn btn-outline-success">🔄 Refrescar Lista</button>
             </div>
-            <table class="table align-middle text-center">
-                <thead class="table-dark">
-                    <tr><th>ID</th><th>Nombre</th><th>Edad</th><th>Rango</th><th>Poder</th><th>Acción</th></tr>
-                </thead>
-                <tbody id="tabla"></tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Guerrero</th>
+                            <th>Edad</th>
+                            <th>Rango</th>
+                            <th>Nivel Poder</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-cuerpo">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="text-center mt-3 pb-5">
+            <a href="swagger.html" class="btn btn-link text-decoration-none text-muted">Ver Documentación Técnica (Swagger)</a>
         </div>
     </div>
 
     <script>
-        const URL = '/cgi-bin/api.pl';
+        const API_URL = '/cgi-bin/api.pl';
 
-        function limit3(el) { if(el.value.length > 3) el.value = el.value.slice(0,3); }
-
-        // GET: Buscar solo uno
+        // 1. BUSCAR UNO (GET con parámetro ID)
         async function buscarUno() {
             const id = document.getElementById('buscar-id').value;
-            if(!id) return;
-            const res = await fetch(`${URL}?id=${id}`);
+            if(!id) return alert("Ingresa un ID");
+            
+            const res = await fetch(`${API_URL}?id=${id}`);
             const p = await res.json();
-            const div = document.getElementById('resultado-busqueda');
+            const resDiv = document.getElementById('resultado-busqueda');
+
             if(p.error) {
-                div.innerHTML = `<span class="text-danger">❌ ${p.error}</span>`;
+                resDiv.innerHTML = `<span class="text-danger">❌ ${p.error}</span>`;
             } else {
-                div.innerHTML = `✅ <b>Encontrado:</b> ${p.nombre} (${p.rango}) - Poder: ${p.nivel_poder}`;
+                resDiv.innerHTML = `✅ <b>${p.nombre}</b> | Universo: ${p.universo} | Rango: <span class="badge bg-secondary">${p.rango}</span>`;
             }
         }
 
-        // GET: Cargar todos
+        // 2. CARGAR TODOS (GET sin parámetros)
         async function cargarTodos() {
-            const res = await fetch(URL);
-            const json = await res.json();
-            const tbody = document.getElementById('tabla');
-            tbody.innerHTML = '';
-            json.data.forEach(p => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="id-destacado">${p.id}</td>
-                        <td>${p.nombre}</td>
-                        <td>${p.edad}</td>
-                        <td><span class="badge bg-primary">${p.rango}</span></td>
-                        <td>${p.nivel_poder}</td>
-                        <td><button onclick="borrar(${p.id})" class="btn btn-sm btn-outline-danger">Eliminar</button></td>
-                    </tr>`;
-            });
+            try {
+                const res = await fetch(API_URL);
+                const json = await res.json();
+                const tbody = document.getElementById('tabla-cuerpo');
+                tbody.innerHTML = '';
+
+                if(json.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-muted p-4">No hay personajes registrados actualmente.</td></tr>';
+                    return;
+                }
+
+                json.data.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="id-badge">${p.id}</span></td>
+                            <td><b class="text-dark">${p.nombre}</b><br><small class="text-muted">${p.universo}</small></td>
+                            <td>${p.edad} años</td>
+                            <td><span class="rango-badge bg-light text-dark border">${p.rango}</span></td>
+                            <td><span class="badge bg-warning text-dark">${p.nivel_poder}</span></td>
+                            <td>
+                                <button onclick="borrar(${p.id})" class="btn btn-sm btn-delete">Eliminar</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (e) { console.error("Error cargando tabla:", e); }
         }
 
-        // POST: Agregar con Edad
+        // 3. AGREGAR (POST con validación de contraseña)
         async function agregar() {
             const pass = document.getElementById('pass').value;
             const data = {
@@ -102,26 +160,48 @@
                 nivel_poder: parseInt(document.getElementById('p-poder').value),
                 universo: document.getElementById('p-universo').value
             };
-            const res = await fetch(URL, { 
+
+            if(!data.nombre || isNaN(data.edad)) return alert("Nombre y Edad son obligatorios");
+
+            const res = await fetch(API_URL, { 
                 method: 'POST', 
-                headers: { 'X-Auth-Token': pass },
+                headers: { 
+                    'X-Auth-Token': pass,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(data) 
             });
+
             const result = await res.json();
-            if(result.error) alert(result.error); else cargarTodos();
+            if(result.error) {
+                alert("❌ Error: " + result.error);
+            } else {
+                // Limpiar formulario y recargar
+                document.getElementById('p-nombre').value = '';
+                document.getElementById('p-edad').value = '';
+                document.getElementById('p-poder').value = '';
+                document.getElementById('p-universo').value = '';
+                cargarTodos();
+                alert("✅ Guerrero registrado con éxito");
+            }
         }
 
+        // 4. BORRAR (DELETE con ID en URL y contraseña en Header)
         async function borrar(id) {
             const pass = document.getElementById('pass').value;
-            if(!confirm("¿Borrar?")) return;
-            const res = await fetch(`${URL}?id=${id}`, { 
-                method: 'DELETE', 
+            if(!confirm(`¿Estás seguro de eliminar al ID #${id}?`)) return;
+
+            const res = await fetch(`${API_URL}?id=${id}`, { 
+                method: 'DELETE',
                 headers: { 'X-Auth-Token': pass } 
             });
+
             const result = await res.json();
-            if(result.error) alert(result.error); else cargarTodos();
+            if(result.error) alert("❌ " + result.error);
+            else cargarTodos();
         }
 
+        // Carga inicial
         window.onload = cargarTodos;
     </script>
 </body>
