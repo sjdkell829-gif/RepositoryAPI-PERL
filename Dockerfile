@@ -1,9 +1,22 @@
 FROM httpd:2.4
-RUN apt-get update && apt-get install -y perl libjson-perl libfile-slurp-perl && rm -rf /var/lib/apt/lists/*
-RUN sed -i 's/#LoadModule cgi_module/LoadModule cgi_module/' /usr/local/apache2/conf/httpd.conf
-RUN echo "AddHandler cgi-script .pl" >> /usr/local/apache2/conf/httpd.conf
-RUN sed -i 's/Options Indexes FollowSymLinks/Options Indexes FollowSymLinks ExecCGI/' /usr/local/apache2/conf/httpd.conf
-RUN echo '<Directory "/usr/local/apache2/cgi-bin">\n    AllowOverride None\n    Options ExecCGI\n    Require all granted\n</Directory>' >> /usr/local/apache2/conf/httpd.conf
+
+RUN apt-get update && apt-get install -y \
+    perl \
+    libjson-perl \
+    libfile-slurp-perl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i 's/#LoadModule cgi_module modules\/mod_cgi.so/LoadModule cgi_module modules\/mod_cgi.so/' /usr/local/apache2/conf/httpd.conf
+
+RUN echo 'ScriptAlias /cgi-bin/ /usr/local/apache2/cgi-bin/' >> /usr/local/apache2/conf/httpd.conf
+RUN echo '<Directory "/usr/local/apache2/cgi-bin">' >> /usr/local/apache2/conf/httpd.conf
+RUN echo '    AllowOverride None' >> /usr/local/apache2/conf/httpd.conf
+RUN echo '    Options +ExecCGI' >> /usr/local/apache2/conf/httpd.conf
+RUN echo '    AddHandler cgi-script .pl' >> /usr/local/apache2/conf/httpd.conf
+RUN echo '    Require all granted' >> /usr/local/apache2/conf/httpd.conf
+RUN echo '</Directory>' >> /usr/local/apache2/conf/httpd.conf
+RUN echo 'SetEnvIf Request_URI "." HTTP_X_AUTH_TOKEN=%{HTTP:X-Auth-Token}e' >> /usr/local/apache2/conf/httpd.conf
+
 COPY ./index.html /usr/local/apache2/htdocs/
 COPY ./swagger.html /usr/local/apache2/htdocs/
 COPY ./cgi-bin/ /usr/local/apache2/cgi-bin/
