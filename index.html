@@ -5,70 +5,99 @@
     <title>Anime CRUD - Erick</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f4f7f6; padding-top: 50px; }
-        .main-card { border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        body { background: #f8f9fa; padding-top: 50px; }
+        .container { max-width: 800px; }
+        .card { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="card main-card p-4">
+    <div class="card p-4">
         <h2 class="text-center mb-4">⚔️ Registro de Guerreros</h2>
         
         <div class="row g-2 mb-4">
             <input type="hidden" id="p-id">
-            <div class="col-md-3"><input type="password" id="pass" class="form-control" placeholder="Token (admin123)"></div>
-            <div class="col-md-4"><input type="text" id="p-nom" class="form-control" placeholder="Nombre del Personaje"></div>
-            <div class="col-md-3"><input type="text" id="p-uni" class="form-control" placeholder="Universo"></div>
-            <div class="col-md-2"><button id="btn-save" onclick="enviar('POST')" class="btn btn-primary w-100">Guardar</button></div>
+            <div class="col-md-3">
+                <input type="password" id="pass" class="form-control" placeholder="Token (admin123)">
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="p-nom" class="form-control" placeholder="Nombre del Guerrero">
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="p-uni" class="form-control" placeholder="Universo">
+            </div>
+            <div class="col-md-2">
+                <button id="btn-save" onclick="enviar('POST')" class="btn btn-primary w-100">Guardar</button>
+            </div>
         </div>
 
-        <table class="table table-hover">
+        <table class="table table-hover align-middle">
             <thead class="table-dark">
-                <tr><th>ID</th><th>Nombre</th><th>Universo</th><th>Acciones</th></tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Universo</th>
+                    <th>Acciones</th>
+                </tr>
             </thead>
-            <tbody id="lista"></tbody>
+            <tbody id="lista">
+                </tbody>
         </table>
+        <div class="text-center mt-3">
+            <a href="swagger.html" class="btn btn-sm btn-outline-secondary">Ver Documentación Swagger</a>
+        </div>
     </div>
 </div>
 
 <script>
     const API = '/cgi-bin/api.pl';
 
+    // 1. Función para CARGAR la lista de guerreros
     async function cargar() {
-        const res = await fetch(API);
-        const data = await res.json();
-        const lista = document.getElementById('lista');
-        lista.innerHTML = '';
-        data.forEach(p => {
-            lista.innerHTML += `<tr>
-                <td>${p.id}</td>
-                <td><b>${p.nombre}</b></td>
-                <td>${p.universo}</td>
-                <td>
-                    <button onclick='prepararEdit(${JSON.stringify(p)})' class="btn btn-sm btn-warning">✏️</button>
-                    <button onclick="borrar(${p.id})" class="btn btn-sm btn-danger">🗑️</button>
-                </td>
-            </tr>`;
-        });
+        try {
+            const res = await fetch(API);
+            const data = await res.json();
+            const lista = document.getElementById('lista');
+            lista.innerHTML = '';
+            
+            data.forEach(p => {
+                lista.innerHTML += `<tr>
+                    <td>${p.id}</td>
+                    <td><b>${p.nombre}</b></td>
+                    <td>${p.universo}</td>
+                    <td>
+                        <button onclick='prepararEdit(${JSON.stringify(p)})' class="btn btn-sm btn-warning">✏️</button>
+                        <button onclick="borrar(${p.id})" class="btn btn-sm btn-danger">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+        } catch (e) {
+            console.error("Error al cargar datos:", e);
+        }
     }
 
+    // 2. Función para EDITAR (llena el formulario)
     function prepararEdit(p) {
         document.getElementById('p-id').value = p.id;
         document.getElementById('p-nom').value = p.nombre;
         document.getElementById('p-uni').value = p.universo;
-        document.getElementById('btn-save').innerText = "Actualizar";
-        document.getElementById('btn-save').className = "btn btn-warning w-100";
-        document.getElementById('btn-save').onclick = () => enviar('PUT');
+        
+        const btn = document.getElementById('btn-save');
+        btn.innerText = "Actualizar";
+        btn.className = "btn btn-warning w-100";
+        btn.onclick = () => enviar('PUT');
     }
 
+    // 3. Función para GUARDAR o ACTUALIZAR
     async function enviar(m) {
         const body = { 
             nombre: document.getElementById('p-nom').value, 
             universo: document.getElementById('p-uni').value 
         };
+        
         if(m === 'PUT') body.id = parseInt(document.getElementById('p-id').value);
 
-        await fetch(API, {
+        const res = await fetch(API, {
             method: m,
             headers: { 
                 'X-Auth-Token': document.getElementById('pass').value, 
@@ -76,11 +105,19 @@
             },
             body: JSON.stringify(body)
         });
-        location.reload();
+
+        if(res.ok) {
+            alert("¡Operación exitosa!");
+            location.reload(); // Recarga para ver los cambios
+        } else {
+            alert("Error: Revisa el token.");
+        }
     }
 
+    // 4. Función para BORRAR
     async function borrar(id) {
-        if(!confirm("¿Seguro que quieres eliminarlo?")) return;
+        if(!confirm("¿Deseas eliminar a este personaje?")) return;
+        
         await fetch(`${API}?id=${id}`, { 
             method: 'DELETE', 
             headers: { 'X-Auth-Token': document.getElementById('pass').value } 
@@ -88,6 +125,7 @@
         cargar();
     }
 
+    // Cargar la tabla al abrir la página
     window.onload = cargar;
 </script>
 </body>
