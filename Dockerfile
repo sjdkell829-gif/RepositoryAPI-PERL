@@ -7,9 +7,9 @@ COPY ./index.html /usr/local/apache2/htdocs/
 COPY ./swagger.html /usr/local/apache2/htdocs/
 COPY ./cgi-bin/ /usr/local/apache2/cgi-bin/
 
-# PERMISOS CRÍTICOS PARA EL GUARDADO
 RUN echo "[]" > /usr/local/apache2/cgi-bin/datos.json
 RUN chmod -R 777 /usr/local/apache2/cgi-bin/
+RUN chmod +x /usr/local/apache2/cgi-bin/api.pl
 RUN chown -R www-data:www-data /usr/local/apache2/cgi-bin/
 
 EXPOSE 80
