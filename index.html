@@ -5,37 +5,24 @@
     <title>Anime Admin - Erick</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f4f6f9; padding: 20px; font-family: 'Segoe UI', sans-serif; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        body { background: #f0f2f5; padding: 20px; font-family: sans-serif; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .badge-pow { background: #ffc107; color: #000; font-weight: bold; }
-        .table-container { max-height: 500px; overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 class="text-center mb-4">⚔️ Gestión de Guerreros Multiversales</h2>
+        <h2 class="text-center mb-4">⚔️ Panel Anime API</h2>
         
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card p-3 bg-dark text-white">
-                    <label class="small text-secondary">Token (admin123)</label>
-                    <input type="password" id="pass" class="form-control form-control-sm" placeholder="Ingresa el token para editar">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <label class="small text-muted">Buscar por ID Específico</label>
-                    <div class="input-group input-group-sm">
-                        <input type="number" id="search-id" class="form-control" placeholder="Ej: 1">
-                        <button onclick="buscarPorId()" class="btn btn-primary">🔍 Buscar</button>
-                        <button onclick="cargar()" class="btn btn-outline-secondary">Limpiar</button>
-                    </div>
-                </div>
+        <div class="card p-3 bg-dark text-white shadow-sm">
+            <div class="row align-items-center">
+                <div class="col-md-9 small">Contraseña: <b>admin123</b></div>
+                <div class="col-md-3"><input type="password" id="pass" class="form-control form-control-sm" placeholder="Token"></div>
             </div>
         </div>
 
         <div class="card p-4">
-            <h5 id="form-title" class="text-primary mb-3">Registrar Nuevo Guerrero</h5>
+            <h5 id="titulo-form">Registrar Guerrero</h5>
             <input type="hidden" id="p-id">
             <div class="row g-2">
                 <div class="col-md-3"><input type="text" id="p-nombre" class="form-control" placeholder="Nombre"></div>
@@ -43,71 +30,53 @@
                 <div class="col-md-2"><input type="number" id="p-poder" class="form-control" placeholder="Poder"></div>
                 <div class="col-md-3"><input type="text" id="p-universo" class="form-control" placeholder="Universo"></div>
                 <div class="col-md-2 d-grid gap-1">
-                    <button id="btn-save" onclick="enviar('POST')" class="btn btn-success">Guardar</button>
+                    <button id="btn-save" onclick="enviar('POST')" class="btn btn-primary">Guardar</button>
                     <button id="btn-cancel" onclick="location.reload()" class="btn btn-link btn-sm d-none">Cancelar</button>
                 </div>
             </div>
         </div>
 
         <div class="card p-4">
-            <h5>📋 Lista de Personajes</h5>
-            <div class="table-responsive table-container">
-                <table class="table table-hover text-center align-middle">
-                    <thead class="table-dark">
-                        <tr><th>ID</th><th>Guerrero</th><th>Rango</th><th>Poder</th><th>Acciones</th></tr>
-                    </thead>
-                    <tbody id="lista"></tbody>
-                </table>
-            </div>
+            <table class="table table-hover text-center align-middle">
+                <thead><tr><th>ID</th><th>Nombre</th><th>Rango</th><th>Poder</th><th>Acciones</th></tr></thead>
+                <tbody id="lista"></tbody>
+            </table>
         </div>
-        <div class="text-center pb-5"><a href="swagger.html" target="_blank" class="btn btn-sm btn-outline-dark">Ver Documentación Swagger</a></div>
     </div>
 
     <script>
         const API = '/cgi-bin/api.pl';
 
-        async function cargar(url = API) {
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                const lista = document.getElementById('lista');
-                lista.innerHTML = '';
-                
-                // Manejar si viene un solo objeto o un array
-                const arr = Array.isArray(data) ? data : (data.error ? [] : [data]);
-                
-                arr.forEach(p => {
-                    lista.innerHTML += `<tr>
-                        <td><b>${p.id}</b></td>
-                        <td>${p.nombre}<br><small class="text-muted">${p.universo}</small></td>
-                        <td><span class="badge bg-light text-dark border">${p.rango}</span></td>
-                        <td><span class="badge badge-pow">${p.nivel_poder}</span></td>
-                        <td>
-                            <button onclick='prepararEdit(${JSON.stringify(p)})' class="btn btn-sm btn-warning">✏️</button>
-                            <button onclick="borrar(${p.id})" class="btn btn-sm btn-danger">🗑️</button>
-                        </td>
-                    </tr>`;
-                });
-            } catch (e) { console.error("Error cargando:", e); }
+        async function cargar() {
+            const res = await fetch(API);
+            const data = await res.json();
+            const lista = document.getElementById('lista');
+            lista.innerHTML = '';
+            data.forEach(p => {
+                lista.innerHTML += `<tr>
+                    <td><b>${p.id}</b></td>
+                    <td>${p.nombre}<br><small class='text-muted'>${p.universo}</small></td>
+                    <td><span class='badge bg-light text-dark border'>${p.rango}</span></td>
+                    <td><span class='badge badge-pow'>${p.nivel_poder}</span></td>
+                    <td>
+                        <button onclick='editar(${JSON.stringify(p)})' class='btn btn-sm btn-warning'>✏️</button>
+                        <button onclick='borrar(${p.id})' class='btn btn-sm btn-danger'>🗑️</button>
+                    </td>
+                </tr>`;
+            });
         }
 
-        function buscarPorId() {
-            const id = document.getElementById('search-id').value;
-            if(id) cargar(`${API}?id=${id}`);
-        }
-
-        function prepararEdit(p) {
+        function editar(p) {
             document.getElementById('p-id').value = p.id;
             document.getElementById('p-nombre').value = p.nombre;
             document.getElementById('p-edad').value = p.edad;
             document.getElementById('p-poder').value = p.nivel_poder;
             document.getElementById('p-universo').value = p.universo;
-            document.getElementById('form-title').innerText = "Editando Guerrero #" + p.id;
-            document.getElementById('btn-save').innerText = "Actualizar Cambios";
-            document.getElementById('btn-save').className = "btn btn-warning";
+            document.getElementById('titulo-form').innerText = "Editando #" + p.id;
+            document.getElementById('btn-save').innerText = "Actualizar";
             document.getElementById('btn-save').onclick = () => enviar('PUT');
             document.getElementById('btn-cancel').classList.remove('d-none');
-            window.scrollTo(0, 0);
+            window.scrollTo(0,0);
         }
 
         async function enviar(m) {
@@ -121,30 +90,21 @@
 
             const res = await fetch(API, {
                 method: m,
-                headers: { 
-                    'X-Auth-Token': document.getElementById('pass').value,
-                    'Content-Type': 'application/json' 
-                },
+                headers: { 'X-Auth-Token': document.getElementById('pass').value, 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-
             const r = await res.json();
-            if(r.error) {
-                alert("❌ Error: " + r.error);
-            } else {
-                alert("✅ Guerrero " + (m === 'POST' ? "Guardado" : "Actualizado"));
-                setTimeout(() => location.reload(), 200);
+            if(r.error) alert(r.error);
+            else { 
+                alert("¡Éxito!"); 
+                setTimeout(() => location.reload(), 200); 
             }
         }
 
         async function borrar(id) {
-            if(!confirm("¿Estás seguro de eliminar a este guerrero?")) return;
-            const res = await fetch(`${API}?id=${id}`, { 
-                method: 'DELETE', 
-                headers: { 'X-Auth-Token': document.getElementById('pass').value } 
-            });
-            const r = await res.json();
-            if(r.error) alert(r.error); else cargar();
+            if(!confirm("¿Borrar?")) return;
+            await fetch(`${API}?id=${id}`, { method: 'DELETE', headers: { 'X-Auth-Token': document.getElementById('pass').value } });
+            cargar();
         }
 
         window.onload = cargar;
