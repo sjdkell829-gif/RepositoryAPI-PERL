@@ -5,40 +5,49 @@
     <title>Anime Admin - Erick</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f0f2f5; padding: 20px; font-family: sans-serif; }
-        .card { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        body { background: #f8f9fa; padding: 20px; }
+        .card { border-radius: 12px; margin-bottom: 20px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .badge-pow { background: #ffc107; color: #000; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 class="text-center mb-4">⚔️ Panel Anime API</h2>
-        
-        <div class="card p-3 bg-dark text-white shadow-sm">
-            <div class="row align-items-center">
-                <div class="col-md-9 small">Contraseña: <b>admin123</b></div>
-                <div class="col-md-3"><input type="password" id="pass" class="form-control form-control-sm" placeholder="Token"></div>
+        <h3 class="text-center mb-4">⚔️ Panel de Control Anime (CRUD)</h3>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card p-3 bg-dark text-white">
+                    <label class="small">Token de Seguridad</label>
+                    <input type="password" id="pass" class="form-control" value="admin123">
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card p-3">
+                    <label class="small">Filtros (Parámetros)</label>
+                    <div class="input-group">
+                        <input type="number" id="f-id" class="form-control" placeholder="ID">
+                        <input type="text" id="f-uni" class="form-control" placeholder="Universo">
+                        <button onclick="filtrar()" class="btn btn-primary">🔍 Aplicar Filtros</button>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="card p-4">
-            <h5 id="titulo-form">Registrar Guerrero</h5>
+            <h5 id="form-title">Registrar Guerrero</h5>
             <input type="hidden" id="p-id">
             <div class="row g-2">
                 <div class="col-md-3"><input type="text" id="p-nombre" class="form-control" placeholder="Nombre"></div>
                 <div class="col-md-2"><input type="number" id="p-edad" class="form-control" placeholder="Edad"></div>
                 <div class="col-md-2"><input type="number" id="p-poder" class="form-control" placeholder="Poder"></div>
                 <div class="col-md-3"><input type="text" id="p-universo" class="form-control" placeholder="Universo"></div>
-                <div class="col-md-2 d-grid gap-1">
-                    <button id="btn-save" onclick="enviar('POST')" class="btn btn-primary">Guardar</button>
-                    <button id="btn-cancel" onclick="location.reload()" class="btn btn-link btn-sm d-none">Cancelar</button>
-                </div>
+                <div class="col-md-2 d-grid"><button id="btn-save" onclick="enviar('POST')" class="btn btn-success">Guardar</button></div>
             </div>
         </div>
 
         <div class="card p-4">
-            <table class="table table-hover text-center align-middle">
-                <thead><tr><th>ID</th><th>Nombre</th><th>Rango</th><th>Poder</th><th>Acciones</th></tr></thead>
+            <table class="table table-hover text-center">
+                <thead><tr><th>ID</th><th>Nombre</th><th>Poder</th><th>Acciones</th></tr></thead>
                 <tbody id="lista"></tbody>
             </table>
         </div>
@@ -46,68 +55,62 @@
 
     <script>
         const API = '/cgi-bin/api.pl';
-
-        async function cargar() {
-            const res = await fetch(API);
+        async function cargar(p = "") {
+            const res = await fetch(API + p);
             const data = await res.json();
             const lista = document.getElementById('lista');
             lista.innerHTML = '';
             data.forEach(p => {
                 lista.innerHTML += `<tr>
                     <td><b>${p.id}</b></td>
-                    <td>${p.nombre}<br><small class='text-muted'>${p.universo}</small></td>
-                    <td><span class='badge bg-light text-dark border'>${p.rango}</span></td>
-                    <td><span class='badge badge-pow'>${p.nivel_poder}</span></td>
+                    <td>${p.nombre}<br><small>${p.universo}</small></td>
+                    <td><span class="badge badge-pow">${p.nivel_poder}</span></td>
                     <td>
-                        <button onclick='editar(${JSON.stringify(p)})' class='btn btn-sm btn-warning'>✏️</button>
-                        <button onclick='borrar(${p.id})' class='btn btn-sm btn-danger'>🗑️</button>
+                        <button onclick='prepararEdit(${JSON.stringify(p)})' class="btn btn-sm btn-warning">✏️</button>
+                        <button onclick="borrar(${p.id})" class="btn btn-sm btn-danger">🗑️</button>
                     </td>
                 </tr>`;
             });
         }
-
-        function editar(p) {
+        function filtrar() {
+            const id = document.getElementById('f-id').value;
+            const uni = document.getElementById('f-uni').value;
+            let params = "?";
+            if(id) params += `id=${id}&`;
+            if(uni) params += `universo=${uni}`;
+            cargar(params);
+        }
+        function prepararEdit(p) {
             document.getElementById('p-id').value = p.id;
             document.getElementById('p-nombre').value = p.nombre;
             document.getElementById('p-edad').value = p.edad;
             document.getElementById('p-poder').value = p.nivel_poder;
             document.getElementById('p-universo').value = p.universo;
-            document.getElementById('titulo-form').innerText = "Editando #" + p.id;
             document.getElementById('btn-save').innerText = "Actualizar";
             document.getElementById('btn-save').onclick = () => enviar('PUT');
-            document.getElementById('btn-cancel').classList.remove('d-none');
-            window.scrollTo(0,0);
         }
-
         async function enviar(m) {
             const body = {
                 nombre: document.getElementById('p-nombre').value,
-                edad: parseInt(document.getElementById('p-edad').value) || 0,
-                nivel_poder: parseInt(document.getElementById('p-poder').value) || 0,
-                universo: document.getElementById('p-universo').value || "Desconocido"
+                edad: parseInt(document.getElementById('p-edad').value),
+                nivel_poder: parseInt(document.getElementById('p-poder').value),
+                universo: document.getElementById('p-universo').value
             };
             if(m === 'PUT') body.id = parseInt(document.getElementById('p-id').value);
-
-            const res = await fetch(API, {
+            await fetch(API, {
                 method: m,
                 headers: { 'X-Auth-Token': document.getElementById('pass').value, 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-            const r = await res.json();
-            if(r.error) alert(r.error);
-            else { 
-                alert("¡Éxito!"); 
-                setTimeout(() => location.reload(), 200); 
+            location.reload();
+        }
+        async function borrar(id) {
+            if(confirm("¿Borrar?")) {
+                await fetch(`${API}?id=${id}`, { method: 'DELETE', headers: { 'X-Auth-Token': document.getElementById('pass').value } });
+                cargar();
             }
         }
-
-        async function borrar(id) {
-            if(!confirm("¿Borrar?")) return;
-            await fetch(`${API}?id=${id}`, { method: 'DELETE', headers: { 'X-Auth-Token': document.getElementById('pass').value } });
-            cargar();
-        }
-
-        window.onload = cargar;
+        window.onload = () => cargar();
     </script>
 </body>
 </html>
