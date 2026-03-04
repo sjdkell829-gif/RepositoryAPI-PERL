@@ -3,6 +3,7 @@ RUN apt-get update && apt-get install -y perl libjson-perl libfile-slurp-perl &&
 RUN sed -i 's/#LoadModule cgi_module/LoadModule cgi_module/' /usr/local/apache2/conf/httpd.conf
 RUN echo "AddHandler cgi-script .pl" >> /usr/local/apache2/conf/httpd.conf
 RUN sed -i 's/Options Indexes FollowSymLinks/Options Indexes FollowSymLinks ExecCGI/' /usr/local/apache2/conf/httpd.conf
+RUN echo '<Directory "/usr/local/apache2/cgi-bin">\n    AllowOverride None\n    Options ExecCGI\n    Require all granted\n</Directory>' >> /usr/local/apache2/conf/httpd.conf
 COPY ./index.html /usr/local/apache2/htdocs/
 COPY ./swagger.html /usr/local/apache2/htdocs/
 COPY ./cgi-bin/ /usr/local/apache2/cgi-bin/
