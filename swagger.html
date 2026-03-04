@@ -1,672 +1,265 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Power API — Docs</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #050a14;
-    --surface: #0b1425;
-    --card: #0f1e35;
-    --border: #1a3050;
-    --accent: #00d4ff;
-    --accent2: #ff6b35;
-    --accent3: #a855f7;
-    --get: #22c55e;
-    --post: #3b82f6;
-    --put: #f59e0b;
-    --delete: #ef4444;
-    --health: #a855f7;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --glow: 0 0 20px rgba(0,212,255,0.3);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Exo 2', sans-serif;
-    min-height: 100vh;
-    background-image:
-      radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.04) 0%, transparent 50%),
-      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,212,255,0.03) 39px, rgba(0,212,255,0.03) 40px),
-      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,212,255,0.03) 39px, rgba(0,212,255,0.03) 40px);
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Power API - Docs</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: sans-serif; background: #fafafa; color: #3b4151; font-size: 14px; }
 
-  /* HEADER */
-  .header {
-    background: linear-gradient(135deg, #050a14 0%, #0b1425 50%, #050a14 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 32px 40px;
-    position: relative;
-    overflow: hidden;
-  }
-  .header::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), var(--accent3), var(--accent2), transparent);
-    animation: scanline 3s linear infinite;
-  }
-  @keyframes scanline { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
-  .header-inner { max-width: 960px; margin: 0 auto; }
-  .api-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(0,212,255,0.08);
-    border: 1px solid rgba(0,212,255,0.25);
-    border-radius: 4px;
-    padding: 4px 12px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-  .api-badge::before { content:'●'; animation: blink 1.5s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-  h1 {
-    font-family: 'Orbitron', monospace;
-    font-size: clamp(22px, 4vw, 36px);
-    font-weight: 900;
-    letter-spacing: 3px;
-    background: linear-gradient(135deg, #ffffff 0%, var(--accent) 50%, var(--accent3) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 8px;
-  }
-  .subtitle {
-    font-size: 13px;
-    color: var(--muted);
-    font-family: 'Share Tech Mono', monospace;
-    letter-spacing: 1px;
-  }
-  .version-tag {
-    display: inline-block;
-    background: rgba(168,85,247,0.15);
-    border: 1px solid rgba(168,85,247,0.4);
-    color: var(--accent3);
-    font-size: 11px;
-    font-family: 'Share Tech Mono', monospace;
-    padding: 2px 8px;
-    border-radius: 3px;
-    margin-left: 12px;
-  }
-  .base-url {
-    margin-top: 16px;
-    display: flex; align-items: center; gap: 10px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-  }
-  .base-url span { color: var(--muted); }
-  .base-url code {
-    background: rgba(0,212,255,0.08);
-    border: 1px solid rgba(0,212,255,0.2);
-    border-radius: 4px;
-    padding: 4px 10px;
-    color: var(--accent);
-  }
+    .topbar { background: #1b1b1b; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+    .topbar-logo { font-size: 20px; font-weight: bold; color: #fff; letter-spacing: 1px; }
+    .topbar-sub  { font-size: 12px; color: #aaa; }
 
-  /* AUTH BANNER */
-  .auth-banner {
-    max-width: 960px; margin: 24px auto;
-    background: rgba(245,158,11,0.06);
-    border: 1px solid rgba(245,158,11,0.25);
-    border-left: 3px solid #f59e0b;
-    border-radius: 6px;
-    padding: 14px 20px;
-    display: flex; align-items: center; gap: 12px;
-    font-size: 13px;
-  }
-  .auth-icon { font-size: 20px; }
-  .auth-text strong { color: #f59e0b; font-family:'Share Tech Mono',monospace; }
-  .auth-text p { color: var(--muted); margin-top: 2px; font-size: 12px; }
+    .info-block { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 20px 20px 16px; }
+    .info-block h2 { font-size: 22px; font-weight: bold; color: #3b4151; }
+    .info-block .version { display: inline-block; background: #89bf04; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle; }
+    .info-block p  { font-size: 13px; color: #666; margin-top: 6px; line-height: 1.6; }
+    .info-block .base { font-size: 12px; color: #3b4151; margin-top: 8px; }
+    .info-block .base code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
 
-  /* TOKEN INPUT */
-  .token-section {
-    max-width: 960px; margin: 0 auto 24px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 20px;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .token-label { font-size: 12px; color: var(--muted); font-family:'Share Tech Mono',monospace; white-space: nowrap; }
-  .token-input {
-    flex: 1;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 12px;
-    color: #f59e0b;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .token-input:focus { border-color: #f59e0b; }
-  .token-badge {
-    font-size: 11px; font-family:'Share Tech Mono',monospace;
-    padding: 4px 10px; border-radius: 3px;
-    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #22c55e;
-  }
+    .auth-box { margin: 16px 20px 0; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; font-size: 13px; }
+    .auth-box label { color: #666; white-space: nowrap; font-weight: 600; }
+    .auth-box input { flex: 1; max-width: 280px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 6px 10px; font-size: 13px; font-family: monospace; outline: none; }
+    .auth-box input:focus { border-color: #61affe; }
+    .auth-box .note { font-size: 11px; color: #999; }
 
-  /* MAIN LAYOUT */
-  .main { max-width: 960px; margin: 0 auto; padding: 0 20px 60px; }
+    .section-title { background: #e8f3fb; border: 1px solid #b3d7f5; border-radius: 4px; margin: 20px 20px 0; padding: 10px 16px; font-size: 15px; font-weight: bold; color: #3b4151; }
 
-  /* ENDPOINT CARD */
-  .endpoint-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.15s;
-  }
-  .endpoint-card:hover { border-color: rgba(0,212,255,0.2); transform: translateY(-1px); }
+    .endpoint { margin: 8px 20px 0; border: 1px solid #e8e8e8; border-radius: 4px; background: #fff; overflow: hidden; }
+    .ep-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; user-select: none; transition: background 0.15s; }
+    .ep-header:hover { background: #f5f5f5; }
 
-  .endpoint-header {
-    display: flex; align-items: center; gap: 14px;
-    padding: 16px 20px;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.15s;
-  }
-  .endpoint-header:hover { background: rgba(255,255,255,0.02); }
+    .method { font-size: 11px; font-weight: bold; font-family: monospace; padding: 4px 10px; border-radius: 3px; min-width: 68px; text-align: center; text-transform: uppercase; }
+    .GET    { background: #61affe; color: #fff; }
+    .POST   { background: #49cc90; color: #fff; }
+    .PUT    { background: #fca130; color: #fff; }
+    .DELETE { background: #f93e3e; color: #fff; }
+    .HEALTH { background: #9012fe; color: #fff; }
 
-  .method-badge {
-    font-family: 'Orbitron', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 5px 12px;
-    border-radius: 4px;
-    min-width: 70px;
-    text-align: center;
-  }
-  .method-GET    { background: rgba(34,197,94,0.15);  border:1px solid rgba(34,197,94,0.4);  color: var(--get); }
-  .method-POST   { background: rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); color: var(--post); }
-  .method-PUT    { background: rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); color: var(--put); }
-  .method-DELETE { background: rgba(239,68,68,0.15);  border:1px solid rgba(239,68,68,0.4);  color: var(--delete); }
-  .method-HEALTH { background: rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.4); color: var(--health); }
+    .ep-path    { font-family: monospace; font-size: 14px; font-weight: 600; flex: 1; }
+    .ep-summary { font-size: 13px; color: #666; }
+    .lock-icon  { font-size: 13px; color: #aaa; }
+    .chevron    { font-size: 11px; color: #aaa; transition: transform 0.2s; margin-left: 6px; }
+    .endpoint.open .chevron { transform: rotate(180deg); }
 
-  .endpoint-path {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 14px;
-    color: #cbd5e1;
-    flex: 1;
-  }
-  .endpoint-path em { color: var(--muted); font-style: normal; font-size: 12px; }
-  .endpoint-summary { font-size: 13px; color: var(--muted); margin-left: auto; }
-  .chevron {
-    color: var(--muted); font-size: 12px;
-    transition: transform 0.25s;
-  }
-  .endpoint-card.open .chevron { transform: rotate(180deg); }
+    .ep-body { display: none; border-top: 1px solid #e8e8e8; padding: 16px; background: #fafafa; }
+    .endpoint.open .ep-body { display: block; }
 
-  /* ENDPOINT BODY */
-  .endpoint-body {
-    display: none;
-    border-top: 1px solid var(--border);
-    padding: 20px;
-  }
-  .endpoint-card.open .endpoint-body { display: block; }
+    .param-section { margin-bottom: 16px; }
+    .param-section h4 { font-size: 12px; font-weight: bold; color: #3b4151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  .section-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: 'Share Tech Mono', monospace;
-    margin-bottom: 10px;
-    margin-top: 18px;
-  }
-  .section-label:first-child { margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; }
+    th { background: #f0f0f0; text-align: left; padding: 8px 12px; font-size: 12px; color: #666; font-weight: 600; border-bottom: 1px solid #e8e8e8; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    .pname { font-family: monospace; color: #3b4151; font-weight: 600; }
+    .in-q  { font-size: 11px; background: #e8f3fb; color: #61affe; border: 1px solid #b3d7f5; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    .in-h  { font-size: 11px; background: #fff7e6; color: #fca130; border: 1px solid #ffd591; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    .ptype { font-family: monospace; font-size: 12px; color: #666; }
+    .req   { font-size: 11px; color: #f93e3e; font-weight: 600; }
+    .opt   { font-size: 11px; color: #999; }
+    .pdesc { font-size: 12px; color: #666; margin-top: 2px; }
 
-  /* PARAMS TABLE */
-  .params-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .params-table th {
-    text-align: left;
-    padding: 8px 12px;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-    font-family: 'Share Tech Mono', monospace;
-    font-weight: normal;
-  }
-  .params-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    vertical-align: top;
-  }
-  .params-table tr:last-child td { border-bottom: none; }
-  .param-name { font-family: 'Share Tech Mono', monospace; color: var(--accent); font-size: 13px; }
-  .param-in {
-    font-size: 10px; font-family:'Share Tech Mono',monospace;
-    padding: 2px 6px; border-radius: 3px;
-  }
-  .in-query  { background: rgba(34,197,94,0.1);  color: #22c55e;  border: 1px solid rgba(34,197,94,0.2); }
-  .in-header { background: rgba(245,158,11,0.1); color: #f59e0b;  border: 1px solid rgba(245,158,11,0.2); }
-  .in-path   { background: rgba(59,130,246,0.1); color: #60a5fa;  border: 1px solid rgba(59,130,246,0.2); }
-  .required-tag {
-    font-size: 10px; color: var(--delete);
-    font-family:'Share Tech Mono',monospace;
-  }
-  .optional-tag {
-    font-size: 10px; color: var(--muted);
-    font-family:'Share Tech Mono',monospace;
-  }
-  .type-badge {
-    font-size: 11px; font-family:'Share Tech Mono',monospace;
-    color: var(--accent3);
-  }
-  .param-desc { color: #94a3b8; font-size: 12px; margin-top: 3px; }
+    .body-schema { background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 12px; font-family: monospace; font-size: 12px; color: #555; line-height: 1.8; }
+    .bkey { color: #3b4151; font-weight: 600; }
+    .btype { color: #61affe; }
+    .breq { color: #f93e3e; font-size: 10px; margin-left: 8px; }
+    .bopt { color: #999; font-size: 10px; margin-left: 8px; }
 
-  /* REQUEST BODY */
-  .req-body {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: #94a3b8;
-    line-height: 1.8;
-  }
-  .req-body .key   { color: var(--accent); }
-  .req-body .val   { color: #86efac; }
-  .req-body .type  { color: var(--accent3); }
-  .req-body .req   { color: var(--delete); font-size: 10px; margin-left: 8px; }
-  .req-body .opt   { color: var(--muted);  font-size: 10px; margin-left: 8px; }
+    .responses { display: flex; flex-direction: column; gap: 6px; }
+    .resp-row { display: flex; align-items: flex-start; gap: 12px; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 9px 12px; font-size: 13px; }
+    .sc200,.sc201 { color: #49cc90; font-weight: bold; font-family: monospace; min-width: 34px; }
+    .sc401        { color: #f93e3e; font-weight: bold; font-family: monospace; min-width: 34px; }
+    .sc404        { color: #fca130; font-weight: bold; font-family: monospace; min-width: 34px; }
+    .sc500        { color: #9012fe; font-weight: bold; font-family: monospace; min-width: 34px; }
+    .rdesc { color: #666; flex: 1; }
+    .example { margin-top: 6px; background: #f5f5f5; border: 1px solid #e8e8e8; border-radius: 3px; padding: 8px 12px; font-family: monospace; font-size: 11px; color: #777; }
+    .jk { color: #3b4151; } .js { color: #49cc90; } .jn { color: #fca130; } .jb { color: #9012fe; }
 
-  /* RESPONSES */
-  .response-list { display: flex; flex-direction: column; gap: 8px; }
-  .response-item {
-    display: flex; align-items: center; gap: 12px;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 10px 14px;
-    font-size: 13px;
-  }
-  .status-code {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    font-weight: bold;
-    min-width: 36px;
-  }
-  .s200 { color: var(--get); }
-  .s201 { color: #34d399; }
-  .s401 { color: var(--delete); }
-  .s404 { color: #fb923c; }
-  .s500 { color: var(--accent3); }
-  .response-desc { color: #94a3b8; flex: 1; }
-  .response-example {
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px 14px;
-    margin-top: 8px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: #64748b;
-  }
-  .response-example .json-key   { color: var(--accent); }
-  .response-example .json-str   { color: #86efac; }
-  .response-example .json-num   { color: #fb923c; }
-  .response-example .json-bool  { color: var(--accent3); }
+    .try-box { background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 14px; }
+    .try-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .try-label { font-size: 12px; color: #666; min-width: 80px; font-weight: 600; }
+    .try-input { flex: 1; min-width: 160px; max-width: 300px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 6px 10px; font-size: 13px; font-family: monospace; outline: none; }
+    .try-input:focus { border-color: #61affe; }
+    .try-textarea { width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; padding: 10px; font-size: 12px; font-family: monospace; outline: none; resize: vertical; min-height: 110px; color: #3b4151; line-height: 1.6; }
+    .try-textarea:focus { border-color: #61affe; }
 
-  /* TRY IT */
-  .try-section {
-    background: rgba(0,212,255,0.03);
-    border: 1px solid rgba(0,212,255,0.1);
-    border-radius: 6px;
-    padding: 16px;
-    margin-top: 6px;
-  }
-  .try-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
-  .try-label { font-size: 11px; color: var(--muted); font-family:'Share Tech Mono',monospace; min-width: 90px; }
-  .try-input {
-    flex: 1; min-width: 160px;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 7px 12px;
-    color: var(--text);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .try-input:focus { border-color: var(--accent); }
-  .try-textarea {
-    width: 100%;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px 12px;
-    color: #86efac;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    outline: none;
-    resize: vertical;
-    min-height: 100px;
-    transition: border-color 0.2s;
-  }
-  .try-textarea:focus { border-color: var(--accent); }
-  .execute-btn {
-    background: linear-gradient(135deg, var(--accent), #0099cc);
-    color: #000;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 20px;
-    font-family: 'Orbitron', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .execute-btn:hover { opacity: 0.85; }
-  .execute-btn:active { transform: scale(0.97); }
-  .execute-btn.post-btn { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
-  .execute-btn.put-btn  { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
-  .execute-btn.del-btn  { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
-  .execute-btn.health-btn { background: linear-gradient(135deg, var(--accent3), #7c3aed); color: #fff; }
+    .btn { border: none; border-radius: 4px; padding: 7px 18px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.82; }
+    .btn-get    { background: #61affe; color: #fff; }
+    .btn-post   { background: #49cc90; color: #fff; }
+    .btn-put    { background: #fca130; color: #fff; }
+    .btn-delete { background: #f93e3e; color: #fff; }
+    .btn-health { background: #9012fe; color: #fff; }
 
-  .response-output {
-    margin-top: 12px;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 12px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: #94a3b8;
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 300px;
-    overflow-y: auto;
-    display: none;
-  }
-  .response-output.visible { display: block; }
-  .status-line { font-size: 11px; margin-bottom: 8px; }
-  .status-ok   { color: var(--get); }
-  .status-err  { color: var(--delete); }
+    .resp-output { display: none; margin-top: 10px; background: #f5f5f5; border: 1px solid #e8e8e8; border-radius: 4px; padding: 10px 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 260px; overflow-y: auto; color: #555; }
+    .resp-output.show { display: block; }
+    .sline-ok  { color: #49cc90; font-weight: bold; margin-bottom: 6px; display: block; }
+    .sline-err { color: #f93e3e; font-weight: bold; margin-bottom: 6px; display: block; }
 
-  /* DIVIDER */
-  .section-divider {
-    display: flex; align-items: center; gap: 14px;
-    margin: 32px 0 16px;
-  }
-  .section-divider h2 {
-    font-family: 'Orbitron', monospace;
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .section-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  /* FOOTER */
-  .footer {
-    text-align: center;
-    padding: 24px;
-    font-size: 11px;
-    font-family: 'Share Tech Mono', monospace;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-    margin-top: 40px;
-  }
-  .footer span { color: var(--accent); }
-</style>
+    .footer { text-align: center; padding: 20px; font-size: 12px; color: #999; border-top: 1px solid #e8e8e8; margin-top: 30px; background: #fff; }
+  </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-inner">
-    <div class="api-badge">LIVE API DOCS</div>
-    <h1>ANIME POWER API <span class="version-tag">v8.0.0</span></h1>
-    <p class="subtitle">Sistema CRUD de Guerreros — Desarrollado por Erick</p>
-    <div class="base-url">
-      <span>BASE URL</span>
-      <p class="base">Base URL: <code id="baseUrl"></code></p>
+<div class="topbar">
+  <div class="topbar-logo">⚔️ Anime Power API</div>
+  <div class="topbar-sub">Documentación interactiva — Desarrollado por Erick</div>
+</div>
+
+<div class="info-block">
+  <h2>Anime Power API <span class="version">v8.0.0</span></h2>
+  <p>API RESTful en Perl CGI para gestión de personajes de anime. Soporta operaciones CRUD completas con persistencia en JSON.</p>
+  <p class="base">Base URL: <code id="baseUrl"></code></p>
+</div>
+
+<div class="auth-box">
+  <label>🔒 X-Auth-Token:</label>
+  <input type="password" id="globalToken" value="admin123">
+  <span class="note">Requerido en POST, PUT y DELETE. GET es libre.</span>
+</div>
+
+<!-- ─── GUERREROS ─── -->
+<div class="section-title">Guerreros</div>
+
+<!-- GET -->
+<div class="endpoint" id="c-get">
+  <div class="ep-header" onclick="toggle('c-get')">
+    <span class="method GET">GET</span>
+    <span class="ep-path">/cgi-bin/api.pl</span>
+    <span class="ep-summary">Listar todos o filtrar por parámetros</span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="ep-body">
+    <div class="param-section">
+      <h4>Parámetros (todos opcionales)</h4>
+      <table>
+        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pname">id</span></td><td><span class="in-q">query</span></td><td><span class="ptype">integer</span></td><td><span class="opt">no</span></td><td><span class="pdesc">Filtra por ID exacto</span></td></tr>
+          <tr><td><span class="pname">universo</span></td><td><span class="in-q">query</span></td><td><span class="ptype">string</span></td><td><span class="opt">no</span></td><td><span class="pdesc">Filtra por universo. Case-insensitive (ej: Dragon Ball)</span></td></tr>
+          <tr><td><span class="pname">poder_min</span></td><td><span class="in-q">query</span></td><td><span class="ptype">integer</span></td><td><span class="opt">no</span></td><td><span class="pdesc">Nivel de poder mínimo. Devuelve guerreros con poder ≥ valor</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="param-section">
+      <h4>Respuestas</h4>
+      <div class="responses">
+        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Array JSON con guerreros filtrados (o todos si no hay filtros)<div class="example">[ { <span class="jk">"id"</span>: <span class="jn">1</span>, <span class="jk">"nombre"</span>: <span class="js">"Goku"</span>, <span class="jk">"edad"</span>: <span class="jn">37</span>, <span class="jk">"nivel_poder"</span>: <span class="jn">900</span>, <span class="jk">"universo"</span>: <span class="js">"Dragon Ball"</span>, <span class="jk">"rango"</span>: <span class="js">"Adulto"</span> } ]</div></div></div>
+      </div>
+    </div>
+    <div class="param-section">
+      <h4>Probar</h4>
+      <div class="try-box">
+        <div class="try-row"><span class="try-label">id</span><input class="try-input" id="g-id" placeholder="(opcional)"></div>
+        <div class="try-row"><span class="try-label">universo</span><input class="try-input" id="g-uni" placeholder="ej: Naruto"></div>
+        <div class="try-row"><span class="try-label">poder_min</span><input class="try-input" id="g-pow" placeholder="ej: 500"></div>
+        <button class="btn btn-get" onclick="tryGet()">▶ Ejecutar</button>
+        <div class="resp-output" id="out-get"></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- AUTH BANNER -->
-<div style="max-width:960px;margin:24px auto;padding:0 20px">
-  <div class="auth-banner">
-    <div class="auth-icon">🔐</div>
-    <div class="auth-text">
-      <strong>X-Auth-Token requerido</strong> en POST, PUT y DELETE
-      <p>Las operaciones de escritura requieren el header de autenticación. GET es libre.</p>
-    </div>
+<!-- POST -->
+<div class="endpoint" id="c-post">
+  <div class="ep-header" onclick="toggle('c-post')">
+    <span class="method POST">POST</span>
+    <span class="ep-path">/cgi-bin/api.pl</span>
+    <span class="ep-summary">Registrar nuevo guerrero</span>
+    <span class="lock-icon">🔒</span>
+    <span class="chevron">▼</span>
   </div>
-
-  <!-- TOKEN INPUT -->
-  <div class="token-section">
-    <span class="token-label">X-AUTH-TOKEN →</span>
-    <input type="password" class="token-input" id="globalToken" value="admin123" placeholder="Ingresa tu token...">
-    <span class="token-badge">✓ LISTO</span>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
-  <!-- ═══════════════ GET ALL / FILTER ═══════════════ -->
-  <div class="section-divider"><h2>GUERREROS</h2></div>
-
-  <div class="endpoint-card" id="card-get-all">
-    <div class="endpoint-header" onclick="toggle('card-get-all')">
-      <span class="method-badge method-GET">GET</span>
-      <span class="endpoint-path">/cgi-bin/api.pl <em>— Listar / Filtrar</em></span>
-      <span class="endpoint-summary">Obtiene todos los guerreros o filtra por parámetros</span>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="endpoint-body">
-      <div class="section-label">Parámetros de Query (todos opcionales)</div>
-      <table class="params-table">
-        <thead><tr><th>Nombre</th><th>Ubicación</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+  <div class="ep-body">
+    <div class="param-section">
+      <h4>Headers</h4>
+      <table>
+        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
         <tbody>
-          <tr>
-            <td><span class="param-name">id</span></td>
-            <td><span class="param-in in-query">query</span></td>
-            <td><span class="type-badge">integer</span></td>
-            <td><span class="optional-tag">opcional</span></td>
-            <td><span class="param-desc">Filtra por ID exacto del guerrero</span></td>
-          </tr>
-          <tr>
-            <td><span class="param-name">universo</span></td>
-            <td><span class="param-in in-query">query</span></td>
-            <td><span class="type-badge">string</span></td>
-            <td><span class="optional-tag">opcional</span></td>
-            <td><span class="param-desc">Filtra por universo (ej: Dragon Ball, Naruto). Case-insensitive.</span></td>
-          </tr>
-          <tr>
-            <td><span class="param-name">poder_min</span></td>
-            <td><span class="param-in in-query">query</span></td>
-            <td><span class="type-badge">integer</span></td>
-            <td><span class="optional-tag">opcional</span></td>
-            <td><span class="param-desc">Nivel de poder mínimo (devuelve guerreros con poder &gt;= valor)</span></td>
-          </tr>
+          <tr><td><span class="pname">X-Auth-Token</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc">Token de autenticación. Valor: <code>admin123</code></span></td></tr>
+          <tr><td><span class="pname">Content-Type</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc"><code>application/json</code></span></td></tr>
         </tbody>
       </table>
-
-      <div class="section-label">Respuestas</div>
-      <div class="response-list">
-        <div class="response-item">
-          <span class="status-code s200">200</span>
-          <span class="response-desc">Array JSON con los guerreros que coinciden con los filtros</span>
-        </div>
+    </div>
+    <div class="param-section">
+      <h4>Request Body (application/json)</h4>
+      <div class="body-schema">
+{<br>
+&nbsp;&nbsp;<span class="bkey">"nombre"</span>: <span class="btype">string</span><span class="breq">★ requerido</span><br>
+&nbsp;&nbsp;<span class="bkey">"edad"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
+&nbsp;&nbsp;<span class="bkey">"nivel_poder"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
+&nbsp;&nbsp;<span class="bkey">"universo"</span>: <span class="btype">string</span><span class="bopt">opcional</span><br>
+}
       </div>
-      <div class="response-example">
-<span class="json-key">[</span>
-  {
-    <span class="json-key">"id"</span>: <span class="json-num">1</span>,
-    <span class="json-key">"nombre"</span>: <span class="json-str">"Goku"</span>,
-    <span class="json-key">"edad"</span>: <span class="json-num">37</span>,
-    <span class="json-key">"nivel_poder"</span>: <span class="json-num">9000</span>,
-    <span class="json-key">"universo"</span>: <span class="json-str">"Dragon Ball"</span>,
-    <span class="json-key">"rango"</span>: <span class="json-str">"Adulto"</span>
-  }
-<span class="json-key">]</span></div>
-
-      <div class="section-label">Probar Endpoint</div>
-      <div class="try-section">
-        <div class="try-row">
-          <span class="try-label">?id=</span>
-          <input class="try-input" id="g-id" placeholder="(opcional)">
-          <span class="try-label">universo=</span>
-          <input class="try-input" id="g-uni" placeholder="ej: Naruto">
-          <span class="try-label">poder_min=</span>
-          <input class="try-input" id="g-pow" placeholder="ej: 500">
-        </div>
-        <button class="execute-btn" onclick="tryGet()">▶ EJECUTAR</button>
-        <div class="response-output" id="out-get"></div>
+      <p style="font-size:12px;color:#666;margin-top:8px;">El campo <code>rango</code> se asigna automáticamente: edad &lt; 18 → <b>Joven</b> · 18–99 → <b>Adulto</b> · ≥ 100 → <b>Legendario</b></p>
+    </div>
+    <div class="param-section">
+      <h4>Respuestas</h4>
+      <div class="responses">
+        <div class="resp-row"><span class="sc201">201</span><div class="rdesc">Guerrero creado exitosamente<div class="example">{ <span class="jk">"status"</span>: <span class="js">"Creado"</span>, <span class="jk">"id"</span>: <span class="jn">5</span> }</div></div></div>
+        <div class="resp-row"><span class="sc401">401</span><div class="rdesc">Token inválido o ausente</div></div>
       </div>
     </div>
-  </div>
-
-  <!-- ═══════════════ POST ═══════════════ -->
-  <div class="endpoint-card" id="card-post">
-    <div class="endpoint-header" onclick="toggle('card-post')">
-      <span class="method-badge method-POST">POST</span>
-      <span class="endpoint-path">/cgi-bin/api.pl <em>— Registrar guerrero</em></span>
-      <span class="endpoint-summary">Crea un nuevo guerrero</span>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="endpoint-body">
-      <div class="section-label">Headers</div>
-      <table class="params-table">
-        <thead><tr><th>Header</th><th>Ubicación</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="param-name">X-Auth-Token</span></td>
-            <td><span class="param-in in-header">header</span></td>
-            <td><span class="type-badge">string</span></td>
-            <td><span class="required-tag">★ requerido</span></td>
-            <td><span class="param-desc">Token de autenticación. Valor: <code style="color:#f59e0b">admin123</code></span></td>
-          </tr>
-          <tr>
-            <td><span class="param-name">Content-Type</span></td>
-            <td><span class="param-in in-header">header</span></td>
-            <td><span class="type-badge">string</span></td>
-            <td><span class="required-tag">★ requerido</span></td>
-            <td><span class="param-desc">Debe ser <code style="color:#f59e0b">application/json</code></span></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="section-label">Request Body (application/json)</div>
-      <div class="req-body">
-{
-  <span class="key">"nombre"</span>: <span class="type">&lt;string&gt;</span><span class="req">★ requerido</span>
-  <span class="key">"edad"</span>: <span class="type">&lt;integer&gt;</span><span class="req">★ requerido</span>
-  <span class="key">"nivel_poder"</span>: <span class="type">&lt;integer 0-999&gt;</span><span class="req">★ requerido</span>
-  <span class="key">"universo"</span>: <span class="type">&lt;string&gt;</span><span class="opt">opcional</span>
-}</div>
-
-      <div class="section-label">Clasificación automática de Rango (calculada en servidor)</div>
-      <table class="params-table">
-        <thead><tr><th>Condición</th><th>Rango Asignado</th></tr></thead>
-        <tbody>
-          <tr><td><span class="type-badge">edad &lt; 18</span></td><td><span style="color:#22c55e">Joven</span></td></tr>
-          <tr><td><span class="type-badge">18 ≤ edad &lt; 100</span></td><td><span style="color:#f59e0b">Adulto</span></td></tr>
-          <tr><td><span class="type-badge">edad ≥ 100</span></td><td><span style="color:#a855f7">Legendario</span></td></tr>
-        </tbody>
-      </table>
-
-      <div class="section-label">Respuestas</div>
-      <div class="response-list">
-        <div class="response-item"><span class="status-code s201">201</span><span class="response-desc">Guerrero creado exitosamente. Retorna el ID asignado.</span></div>
-        <div class="response-item"><span class="status-code s401">401</span><span class="response-desc">Token inválido o ausente.</span></div>
-      </div>
-      <div class="response-example">
-{ <span class="json-key">"status"</span>: <span class="json-str">"Creado"</span>, <span class="json-key">"id"</span>: <span class="json-num">5</span> }</div>
-
-      <div class="section-label">Probar Endpoint</div>
-      <div class="try-section">
-        <div class="try-row"><span class="try-label">JSON Body</span></div>
+    <div class="param-section">
+      <h4>Probar</h4>
+      <div class="try-box">
         <textarea class="try-textarea" id="post-body">{
   "nombre": "Vegeta",
   "edad": 45,
   "nivel_poder": 850,
   "universo": "Dragon Ball"
 }</textarea>
-        <div style="margin-top:10px">
-          <button class="execute-btn post-btn" onclick="tryPost()">▶ EJECUTAR POST</button>
-        </div>
-        <div class="response-output" id="out-post"></div>
+        <button class="btn btn-post" onclick="tryPost()">▶ Ejecutar</button>
+        <div class="resp-output" id="out-post"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ═══════════════ PUT ═══════════════ -->
-  <div class="endpoint-card" id="card-put">
-    <div class="endpoint-header" onclick="toggle('card-put')">
-      <span class="method-badge method-PUT">PUT</span>
-      <span class="endpoint-path">/cgi-bin/api.pl <em>— Actualizar guerrero</em></span>
-      <span class="endpoint-summary">Reemplaza un registro completo por ID</span>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="endpoint-body">
-      <div class="section-label">Headers</div>
-      <table class="params-table">
-        <thead><tr><th>Header</th><th>Ubicación</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+<!-- PUT -->
+<div class="endpoint" id="c-put">
+  <div class="ep-header" onclick="toggle('c-put')">
+    <span class="method PUT">PUT</span>
+    <span class="ep-path">/cgi-bin/api.pl</span>
+    <span class="ep-summary">Actualizar guerrero existente</span>
+    <span class="lock-icon">🔒</span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="ep-body">
+    <div class="param-section">
+      <h4>Headers</h4>
+      <table>
+        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
         <tbody>
-          <tr>
-            <td><span class="param-name">X-Auth-Token</span></td>
-            <td><span class="param-in in-header">header</span></td>
-            <td><span class="type-badge">string</span></td>
-            <td><span class="required-tag">★ requerido</span></td>
-            <td><span class="param-desc">Token de autenticación</span></td>
-          </tr>
+          <tr><td><span class="pname">X-Auth-Token</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc">Token de autenticación</span></td></tr>
         </tbody>
       </table>
-
-      <div class="section-label">Request Body (application/json)</div>
-      <div class="req-body">
-{
-  <span class="key">"id"</span>: <span class="type">&lt;integer&gt;</span><span class="req">★ requerido — ID del guerrero a actualizar</span>
-  <span class="key">"nombre"</span>: <span class="type">&lt;string&gt;</span><span class="req">★ requerido</span>
-  <span class="key">"edad"</span>: <span class="type">&lt;integer&gt;</span><span class="req">★ requerido</span>
-  <span class="key">"nivel_poder"</span>: <span class="type">&lt;integer 0-999&gt;</span><span class="req">★ requerido</span>
-  <span class="key">"universo"</span>: <span class="type">&lt;string&gt;</span><span class="opt">opcional</span>
-}</div>
-
-      <div class="section-label">Respuestas</div>
-      <div class="response-list">
-        <div class="response-item"><span class="status-code s200">200</span><span class="response-desc">Guerrero actualizado correctamente.</span></div>
-        <div class="response-item"><span class="status-code s404">404</span><span class="response-desc">ID no encontrado.</span></div>
-        <div class="response-item"><span class="status-code s401">401</span><span class="response-desc">Token inválido o ausente.</span></div>
+    </div>
+    <div class="param-section">
+      <h4>Request Body (application/json)</h4>
+      <div class="body-schema">
+{<br>
+&nbsp;&nbsp;<span class="bkey">"id"</span>: <span class="btype">integer</span><span class="breq">★ requerido — ID del guerrero a actualizar</span><br>
+&nbsp;&nbsp;<span class="bkey">"nombre"</span>: <span class="btype">string</span><span class="breq">★ requerido</span><br>
+&nbsp;&nbsp;<span class="bkey">"edad"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
+&nbsp;&nbsp;<span class="bkey">"nivel_poder"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
+&nbsp;&nbsp;<span class="bkey">"universo"</span>: <span class="btype">string</span><span class="bopt">opcional</span><br>
+}
       </div>
-      <div class="response-example">
-{ <span class="json-key">"status"</span>: <span class="json-str">"Actualizado"</span> }</div>
-
-      <div class="section-label">Probar Endpoint</div>
-      <div class="try-section">
-        <div class="try-row"><span class="try-label">JSON Body</span></div>
+    </div>
+    <div class="param-section">
+      <h4>Respuestas</h4>
+      <div class="responses">
+        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Guerrero actualizado<div class="example">{ <span class="jk">"status"</span>: <span class="js">"Actualizado"</span> }</div></div></div>
+        <div class="resp-row"><span class="sc404">404</span><div class="rdesc">ID no encontrado</div></div>
+        <div class="resp-row"><span class="sc401">401</span><div class="rdesc">Token inválido o ausente</div></div>
+      </div>
+    </div>
+    <div class="param-section">
+      <h4>Probar</h4>
+      <div class="try-box">
         <textarea class="try-textarea" id="put-body">{
   "id": 1,
   "nombre": "Goku SSJ",
@@ -674,146 +267,116 @@
   "nivel_poder": 999,
   "universo": "Dragon Ball"
 }</textarea>
-        <div style="margin-top:10px">
-          <button class="execute-btn put-btn" onclick="tryPut()">▶ EJECUTAR PUT</button>
-        </div>
-        <div class="response-output" id="out-put"></div>
+        <button class="btn btn-put" onclick="tryPut()">▶ Ejecutar</button>
+        <div class="resp-output" id="out-put"></div>
       </div>
     </div>
   </div>
-
-  <!-- ═══════════════ DELETE ═══════════════ -->
-  <div class="endpoint-card" id="card-delete">
-    <div class="endpoint-header" onclick="toggle('card-delete')">
-      <span class="method-badge method-DELETE">DELETE</span>
-      <span class="endpoint-path">/cgi-bin/api.pl?id={id} <em>— Eliminar guerrero</em></span>
-      <span class="endpoint-summary">Borra permanentemente un registro</span>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="endpoint-body">
-      <div class="section-label">Parámetros</div>
-      <table class="params-table">
-        <thead><tr><th>Nombre</th><th>Ubicación</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="param-name">id</span></td>
-            <td><span class="param-in in-query">query</span></td>
-            <td><span class="type-badge">integer</span></td>
-            <td><span class="required-tag">★ requerido</span></td>
-            <td><span class="param-desc">ID del guerrero a eliminar</span></td>
-          </tr>
-          <tr>
-            <td><span class="param-name">X-Auth-Token</span></td>
-            <td><span class="param-in in-header">header</span></td>
-            <td><span class="type-badge">string</span></td>
-            <td><span class="required-tag">★ requerido</span></td>
-            <td><span class="param-desc">Token de autenticación</span></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="section-label">Respuestas</div>
-      <div class="response-list">
-        <div class="response-item"><span class="status-code s200">200</span><span class="response-desc">Guerrero eliminado. Retorna el ID borrado.</span></div>
-        <div class="response-item"><span class="status-code s401">401</span><span class="response-desc">Token inválido o ausente.</span></div>
-      </div>
-      <div class="response-example">
-{ <span class="json-key">"status"</span>: <span class="json-str">"Eliminado"</span>, <span class="json-key">"id"</span>: <span class="json-num">3</span> }</div>
-
-      <div class="section-label">Probar Endpoint</div>
-      <div class="try-section">
-        <div class="try-row">
-          <span class="try-label">?id=</span>
-          <input class="try-input" id="del-id" placeholder="ID del guerrero" style="max-width:200px">
-        </div>
-        <button class="execute-btn del-btn" onclick="tryDelete()">▶ EJECUTAR DELETE</button>
-        <div class="response-output" id="out-delete"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════ HEALTH CHECK ═══════════════ -->
-  <div class="section-divider"><h2>SISTEMA</h2></div>
-
-  <div class="endpoint-card" id="card-health">
-    <div class="endpoint-header" onclick="toggle('card-health')">
-      <span class="method-badge method-HEALTH">GET</span>
-      <span class="endpoint-path">/cgi-bin/api.pl/health <em>— Health Check</em></span>
-      <span class="endpoint-summary">Estado del servidor y permisos del sistema de archivos</span>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="endpoint-body">
-      <div class="section-label">Descripción</div>
-      <p style="font-size:13px;color:#94a3b8;line-height:1.7;">
-        Endpoint dedicado para monitorear el estado operativo del servidor. Verifica que el archivo
-        <code style="color:var(--accent);font-family:'Share Tech Mono',monospace">datos.json</code>
-        tenga permisos de escritura y que el servicio esté activo. No requiere autenticación.
-      </p>
-
-      <div class="section-label">Parámetros</div>
-      <p style="font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace;">Ninguno</p>
-
-      <div class="section-label">Respuestas</div>
-      <div class="response-list">
-        <div class="response-item"><span class="status-code s200">200</span><span class="response-desc">Servidor operativo. Incluye estado del archivo JSON.</span></div>
-        <div class="response-item"><span class="status-code s500">500</span><span class="response-desc">Error de permisos o servicio no disponible.</span></div>
-      </div>
-      <div class="response-example">
-{
-  <span class="json-key">"status"</span>: <span class="json-str">"OK"</span>,
-  <span class="json-key">"servidor"</span>: <span class="json-str">"Apache/Perl CGI"</span>,
-  <span class="json-key">"db_writable"</span>: <span class="json-bool">true</span>,
-  <span class="json-key">"timestamp"</span>: <span class="json-str">"2025-01-01T00:00:00Z"</span>
-}</div>
-
-      <div class="section-label">Probar Endpoint</div>
-      <div class="try-section">
-        <button class="execute-btn health-btn" onclick="tryHealth()">▶ VERIFICAR SALUD</button>
-        <div class="response-output" id="out-health"></div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /main -->
-
-<div class="footer">
-  ANIME POWER API <span>v8.0.0</span> — Desarrollado por <span>Erick</span> — Desplegado en <span>Render</span> via <span>Docker</span>
 </div>
 
+<!-- DELETE -->
+<div class="endpoint" id="c-delete">
+  <div class="ep-header" onclick="toggle('c-delete')">
+    <span class="method DELETE">DELETE</span>
+    <span class="ep-path">/cgi-bin/api.pl?id={id}</span>
+    <span class="ep-summary">Eliminar guerrero por ID</span>
+    <span class="lock-icon">🔒</span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="ep-body">
+    <div class="param-section">
+      <h4>Parámetros</h4>
+      <table>
+        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pname">id</span></td><td><span class="in-q">query</span></td><td><span class="ptype">integer</span></td><td><span class="req">sí</span></td><td><span class="pdesc">ID del guerrero a eliminar</span></td></tr>
+          <tr><td><span class="pname">X-Auth-Token</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc">Token de autenticación</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="param-section">
+      <h4>Respuestas</h4>
+      <div class="responses">
+        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Guerrero eliminado<div class="example">{ <span class="jk">"status"</span>: <span class="js">"Eliminado"</span>, <span class="jk">"id"</span>: <span class="jn">3</span> }</div></div></div>
+        <div class="resp-row"><span class="sc404">404</span><div class="rdesc">ID no encontrado</div></div>
+        <div class="resp-row"><span class="sc401">401</span><div class="rdesc">Token inválido o ausente</div></div>
+      </div>
+    </div>
+    <div class="param-section">
+      <h4>Probar</h4>
+      <div class="try-box">
+        <div class="try-row"><span class="try-label">id</span><input class="try-input" id="del-id" placeholder="ej: 3" style="max-width:180px"></div>
+        <button class="btn btn-delete" onclick="tryDelete()">▶ Ejecutar</button>
+        <div class="resp-output" id="out-delete"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SISTEMA ─── -->
+<div class="section-title" style="margin-top:24px">Sistema</div>
+
+<!-- HEALTH -->
+<div class="endpoint" id="c-health">
+  <div class="ep-header" onclick="toggle('c-health')">
+    <span class="method HEALTH">GET</span>
+    <span class="ep-path">/cgi-bin/api.pl/health</span>
+    <span class="ep-summary">Health check — estado del servidor</span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="ep-body">
+    <div class="param-section">
+      <h4>Descripción</h4>
+      <p style="font-size:13px;color:#666;line-height:1.6;">Verifica que el servidor esté activo y que <code>datos.json</code> tenga permisos de escritura. No requiere autenticación.</p>
+    </div>
+    <div class="param-section">
+      <h4>Parámetros</h4>
+      <p style="font-size:12px;color:#999;">Ninguno</p>
+    </div>
+    <div class="param-section">
+      <h4>Respuestas</h4>
+      <div class="responses">
+        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Servidor operativo<div class="example">{ <span class="jk">"status"</span>: <span class="js">"OK"</span>, <span class="jk">"servidor"</span>: <span class="js">"Apache/Perl CGI"</span>, <span class="jk">"db_writable"</span>: <span class="jb">true</span>, <span class="jk">"timestamp"</span>: <span class="js">"2025-01-01T00:00:00Z"</span> }</div></div></div>
+        <div class="resp-row"><span class="sc500">500</span><div class="rdesc">Error de permisos o servicio no disponible</div></div>
+      </div>
+    </div>
+    <div class="param-section">
+      <h4>Probar</h4>
+      <div class="try-box">
+        <button class="btn btn-health" onclick="tryHealth()">▶ Ejecutar</button>
+        <div class="resp-output" id="out-health"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-bottom:30px"></div>
+<div class="footer">Anime Power API v8.0.0 — Desarrollado por Erick — Render + Docker</div>
+
 <script>
-  const BASE = '';  // Misma origin, empty = relativo
-
-  function getBase() {
-    return document.getElementById('baseUrl').textContent.replace(/\/$/, '');
-  }
-
-  function toggle(id) {
-    document.getElementById(id).classList.toggle('open');
-  }
-
-  function showOutput(outId, statusCode, body) {
-    const el = document.getElementById(outId);
-    el.classList.add('visible');
-    const isOk = statusCode >= 200 && statusCode < 300;
-    let formatted = body;
-    try { formatted = JSON.stringify(JSON.parse(body), null, 2); } catch(e) {}
-    el.innerHTML = `<div class="status-line ${isOk ? 'status-ok' : 'status-err'}">HTTP ${statusCode} ${isOk ? '✓ OK' : '✗ ERROR'}</div>${formatted}`;
+  function getBase() { return document.getElementById('baseUrl').textContent.replace(/\/$/, ''); }
+  function toggle(id) { document.getElementById(id).classList.toggle('open'); }
+  function showOut(id, code, body) {
+    const el = document.getElementById(id);
+    el.classList.add('show');
+    const ok = code >= 200 && code < 300;
+    let fmt = body;
+    try { fmt = JSON.stringify(JSON.parse(body), null, 2); } catch(e) {}
+    el.innerHTML = `<span class="${ok ? 'sline-ok' : 'sline-err'}">HTTP ${code} ${ok ? '✓' : '✗'}</span>${fmt}`;
   }
 
   async function tryGet() {
-    const id  = document.getElementById('g-id').value;
+    const id = document.getElementById('g-id').value;
     const uni = document.getElementById('g-uni').value;
     const pow = document.getElementById('g-pow').value;
     let url = getBase() + '/cgi-bin/api.pl';
     const p = [];
-    if (id)  p.push(`id=${encodeURIComponent(id)}`);
-    if (uni) p.push(`universo=${encodeURIComponent(uni)}`);
-    if (pow) p.push(`poder_min=${encodeURIComponent(pow)}`);
+    if (id)  p.push('id=' + encodeURIComponent(id));
+    if (uni) p.push('universo=' + encodeURIComponent(uni));
+    if (pow) p.push('poder_min=' + encodeURIComponent(pow));
     if (p.length) url += '?' + p.join('&');
-    try {
-      const r = await fetch(url);
-      showOutput('out-get', r.status, await r.text());
-    } catch(e) { showOutput('out-get', 0, 'Error de red: ' + e.message); }
+    try { const r = await fetch(url); showOut('out-get', r.status, await r.text()); }
+    catch(e) { showOut('out-get', 0, 'Error de red: ' + e.message); }
   }
 
   async function tryPost() {
@@ -821,12 +384,10 @@
     const body  = document.getElementById('post-body').value;
     try {
       const r = await fetch(getBase() + '/cgi-bin/api.pl', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
-        body: body
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token }, body
       });
-      showOutput('out-post', r.status, await r.text());
-    } catch(e) { showOutput('out-post', 0, 'Error de red: ' + e.message); }
+      showOut('out-post', r.status, await r.text());
+    } catch(e) { showOut('out-post', 0, 'Error de red: ' + e.message); }
   }
 
   async function tryPut() {
@@ -834,12 +395,10 @@
     const body  = document.getElementById('put-body').value;
     try {
       const r = await fetch(getBase() + '/cgi-bin/api.pl', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
-        body: body
+        method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token }, body
       });
-      showOutput('out-put', r.status, await r.text());
-    } catch(e) { showOutput('out-put', 0, 'Error de red: ' + e.message); }
+      showOut('out-put', r.status, await r.text());
+    } catch(e) { showOut('out-put', 0, 'Error de red: ' + e.message); }
   }
 
   async function tryDelete() {
@@ -847,19 +406,16 @@
     const id    = document.getElementById('del-id').value;
     if (!id) { alert('Ingresa un ID'); return; }
     try {
-      const r = await fetch(getBase() + `/cgi-bin/api.pl?id=${id}`, {
-        method: 'DELETE',
-        headers: { 'X-Auth-Token': token }
+      const r = await fetch(getBase() + '/cgi-bin/api.pl?id=' + id, {
+        method: 'DELETE', headers: { 'X-Auth-Token': token }
       });
-      showOutput('out-delete', r.status, await r.text());
-    } catch(e) { showOutput('out-delete', 0, 'Error de red: ' + e.message); }
+      showOut('out-delete', r.status, await r.text());
+    } catch(e) { showOut('out-delete', 0, 'Error de red: ' + e.message); }
   }
 
   async function tryHealth() {
-    try {
-      const r = await fetch(getBase() + '/cgi-bin/api.pl/health');
-      showOutput('out-health', r.status, await r.text());
-    } catch(e) { showOutput('out-health', 0, 'Error de red: ' + e.message); }
+    try { const r = await fetch(getBase() + '/cgi-bin/api.pl/health'); showOut('out-health', r.status, await r.text()); }
+    catch(e) { showOut('out-health', 0, 'Error de red: ' + e.message); }
   }
 </script>
 </body>
