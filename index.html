@@ -2,115 +2,115 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Anime Admin - Erick</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Power - Gestión por ID</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f8f9fa; padding: 20px; }
-        .card { border-radius: 12px; margin-bottom: 20px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .badge-pow { background: #ffc107; color: #000; font-weight: bold; }
+        body { background-color: #f4f7f6; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .id-badge { background-color: #0d6efd; color: white; padding: 5px 10px; border-radius: 8px; font-weight: bold; }
+        .btn-delete { background-color: #ff4d4d; color: white; border: none; }
+        .btn-delete:hover { background-color: #cc0000; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h3 class="text-center mb-4">⚔️ Panel de Control Anime (CRUD)</h3>
+        <h1 class="text-center mb-5">⚔️ Panel de Control de Guerreros</h1>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card p-3 bg-dark text-white">
-                    <label class="small">Token de Seguridad</label>
-                    <input type="password" id="pass" class="form-control" value="admin123">
-                </div>
-            </div>
-            <div class="col-md-8">
-                <div class="card p-3">
-                    <label class="small">Filtros (Parámetros)</label>
-                    <div class="input-group">
-                        <input type="number" id="f-id" class="form-control" placeholder="ID">
-                        <input type="text" id="f-uni" class="form-control" placeholder="Universo">
-                        <button onclick="filtrar()" class="btn btn-primary">🔍 Aplicar Filtros</button>
-                    </div>
-                </div>
+        <div class="card p-4">
+            <h5 class="text-primary mb-3">Registrar Nuevo Guerrero</h5>
+            <div class="row g-3">
+                <div class="col-md-4"><input type="text" id="post-nombre" class="form-control" placeholder="Nombre"></div>
+                <div class="col-md-3"><input type="text" id="post-universo" class="form-control" placeholder="Universo"></div>
+                <div class="col-md-3"><input type="text" id="post-poder" class="form-control" placeholder="Nivel de Poder"></div>
+                <div class="col-md-2"><button onclick="agregarPersonaje()" class="btn btn-primary w-100">Guardar</button></div>
             </div>
         </div>
 
         <div class="card p-4">
-            <h5 id="form-title">Registrar Guerrero</h5>
-            <input type="hidden" id="p-id">
-            <div class="row g-2">
-                <div class="col-md-3"><input type="text" id="p-nombre" class="form-control" placeholder="Nombre"></div>
-                <div class="col-md-2"><input type="number" id="p-edad" class="form-control" placeholder="Edad"></div>
-                <div class="col-md-2"><input type="number" id="p-poder" class="form-control" placeholder="Poder"></div>
-                <div class="col-md-3"><input type="text" id="p-universo" class="form-control" placeholder="Universo"></div>
-                <div class="col-md-2 d-grid"><button id="btn-save" onclick="enviar('POST')" class="btn btn-success">Guardar</button></div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-success">Guerreros en Base de Datos</h5>
+                <button onclick="cargarPersonajes()" class="btn btn-outline-success btn-sm">🔄 Recargar Datos</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Universo</th>
+                            <th>Poder</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-cuerpo"></tbody>
+                </table>
             </div>
         </div>
 
-        <div class="card p-4">
-            <table class="table table-hover text-center">
-                <thead><tr><th>ID</th><th>Nombre</th><th>Poder</th><th>Acciones</th></tr></thead>
-                <tbody id="lista"></tbody>
-            </table>
+        <div class="card p-4 border-warning">
+            <h5 class="text-warning mb-3">Actualizar Guerrero por ID</h5>
+            <div class="row g-3">
+                <div class="col-md-2"><input type="number" id="patch-id" class="form-control border-warning" placeholder="ID #"></div>
+                <div class="col-md-3"><input type="text" id="patch-nombre" class="form-control" placeholder="Nuevo Nombre"></div>
+                <div class="col-md-3"><input type="text" id="patch-universo" class="form-control" placeholder="Nuevo Universo"></div>
+                <div class="col-md-2"><input type="text" id="patch-poder" class="form-control" placeholder="Nuevo Poder"></div>
+                <div class="col-md-2"><button onclick="editarPersonaje()" class="btn btn-warning w-100">Modificar</button></div>
+            </div>
         </div>
+        
+        <div class="text-center"><a href="swagger.html" target="_blank" class="text-muted">Abrir Swagger</a></div>
     </div>
 
     <script>
-        const API = '/cgi-bin/api.pl';
-        async function cargar(p = "") {
-            const res = await fetch(API + p);
-            const data = await res.json();
-            const lista = document.getElementById('lista');
-            lista.innerHTML = '';
-            data.forEach(p => {
-                lista.innerHTML += `<tr>
-                    <td><b>${p.id}</b></td>
-                    <td>${p.nombre}<br><small>${p.universo}</small></td>
-                    <td><span class="badge badge-pow">${p.nivel_poder}</span></td>
-                    <td>
-                        <button onclick='prepararEdit(${JSON.stringify(p)})' class="btn btn-sm btn-warning">✏️</button>
-                        <button onclick="borrar(${p.id})" class="btn btn-sm btn-danger">🗑️</button>
-                    </td>
-                </tr>`;
+        const API_URL = '/cgi-bin/api.pl';
+
+        async function cargarPersonajes() {
+            const res = await fetch(API_URL);
+            const json = await res.json();
+            const tbody = document.getElementById('tabla-cuerpo');
+            tbody.innerHTML = '';
+            json.data.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="id-badge">${p.id}</span></td>
+                        <td><strong>${p.nombre}</strong></td>
+                        <td>${p.universo}</td>
+                        <td><span class="badge bg-light text-dark border">${p.nivel_poder}</span></td>
+                        <td><button onclick="eliminarPersonaje(${p.id})" class="btn btn-sm btn-delete">Eliminar</button></td>
+                    </tr>`;
             });
         }
-        function filtrar() {
-            const id = document.getElementById('f-id').value;
-            const uni = document.getElementById('f-uni').value;
-            let params = "?";
-            if(id) params += `id=${id}&`;
-            if(uni) params += `universo=${uni}`;
-            cargar(params);
-        }
-        function prepararEdit(p) {
-            document.getElementById('p-id').value = p.id;
-            document.getElementById('p-nombre').value = p.nombre;
-            document.getElementById('p-edad').value = p.edad;
-            document.getElementById('p-poder').value = p.nivel_poder;
-            document.getElementById('p-universo').value = p.universo;
-            document.getElementById('btn-save').innerText = "Actualizar";
-            document.getElementById('btn-save').onclick = () => enviar('PUT');
-        }
-        async function enviar(m) {
-            const body = {
-                nombre: document.getElementById('p-nombre').value,
-                edad: parseInt(document.getElementById('p-edad').value),
-                nivel_poder: parseInt(document.getElementById('p-poder').value),
-                universo: document.getElementById('p-universo').value
+
+        async function agregarPersonaje() {
+            const data = {
+                nombre: document.getElementById('post-nombre').value,
+                universo: document.getElementById('post-universo').value,
+                nivel_poder: document.getElementById('post-poder').value
             };
-            if(m === 'PUT') body.id = parseInt(document.getElementById('p-id').value);
-            await fetch(API, {
-                method: m,
-                headers: { 'X-Auth-Token': document.getElementById('pass').value, 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            location.reload();
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+            cargarPersonajes();
         }
-        async function borrar(id) {
-            if(confirm("¿Borrar?")) {
-                await fetch(`${API}?id=${id}`, { method: 'DELETE', headers: { 'X-Auth-Token': document.getElementById('pass').value } });
-                cargar();
+
+        async function editarPersonaje() {
+            const data = {
+                id: parseInt(document.getElementById('patch-id').value),
+                nombre: document.getElementById('patch-nombre').value,
+                universo: document.getElementById('patch-universo').value,
+                nivel_poder: document.getElementById('patch-poder').value
+            };
+            await fetch(API_URL, { method: 'PATCH', body: JSON.stringify(data) });
+            cargarPersonajes();
+            alert("¡Actualizado!");
+        }
+
+        async function eliminarPersonaje(id) {
+            if(confirm(`¿Eliminar ID ${id}?`)) {
+                await fetch(`${API_URL}?id=${id}`, { method: 'DELETE' });
+                cargarPersonajes();
             }
         }
-        window.onload = () => cargar();
+        window.onload = cargarPersonajes;
     </script>
 </body>
 </html>

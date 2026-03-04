@@ -1,422 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Power API - Docs</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: sans-serif; background: #fafafa; color: #3b4151; font-size: 14px; }
-
-    .topbar { background: #1b1b1b; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
-    .topbar-logo { font-size: 20px; font-weight: bold; color: #fff; letter-spacing: 1px; }
-    .topbar-sub  { font-size: 12px; color: #aaa; }
-
-    .info-block { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 20px 20px 16px; }
-    .info-block h2 { font-size: 22px; font-weight: bold; color: #3b4151; }
-    .info-block .version { display: inline-block; background: #89bf04; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle; }
-    .info-block p  { font-size: 13px; color: #666; margin-top: 6px; line-height: 1.6; }
-    .info-block .base { font-size: 12px; color: #3b4151; margin-top: 8px; }
-    .info-block .base code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
-
-    .auth-box { margin: 16px 20px 0; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; font-size: 13px; }
-    .auth-box label { color: #666; white-space: nowrap; font-weight: 600; }
-    .auth-box input { flex: 1; max-width: 280px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 6px 10px; font-size: 13px; font-family: monospace; outline: none; }
-    .auth-box input:focus { border-color: #61affe; }
-    .auth-box .note { font-size: 11px; color: #999; }
-
-    .section-title { background: #e8f3fb; border: 1px solid #b3d7f5; border-radius: 4px; margin: 20px 20px 0; padding: 10px 16px; font-size: 15px; font-weight: bold; color: #3b4151; }
-
-    .endpoint { margin: 8px 20px 0; border: 1px solid #e8e8e8; border-radius: 4px; background: #fff; overflow: hidden; }
-    .ep-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; user-select: none; transition: background 0.15s; }
-    .ep-header:hover { background: #f5f5f5; }
-
-    .method { font-size: 11px; font-weight: bold; font-family: monospace; padding: 4px 10px; border-radius: 3px; min-width: 68px; text-align: center; text-transform: uppercase; }
-    .GET    { background: #61affe; color: #fff; }
-    .POST   { background: #49cc90; color: #fff; }
-    .PUT    { background: #fca130; color: #fff; }
-    .DELETE { background: #f93e3e; color: #fff; }
-    .HEALTH { background: #9012fe; color: #fff; }
-
-    .ep-path    { font-family: monospace; font-size: 14px; font-weight: 600; flex: 1; }
-    .ep-summary { font-size: 13px; color: #666; }
-    .lock-icon  { font-size: 13px; color: #aaa; }
-    .chevron    { font-size: 11px; color: #aaa; transition: transform 0.2s; margin-left: 6px; }
-    .endpoint.open .chevron { transform: rotate(180deg); }
-
-    .ep-body { display: none; border-top: 1px solid #e8e8e8; padding: 16px; background: #fafafa; }
-    .endpoint.open .ep-body { display: block; }
-
-    .param-section { margin-bottom: 16px; }
-    .param-section h4 { font-size: 12px; font-weight: bold; color: #3b4151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; }
-    th { background: #f0f0f0; text-align: left; padding: 8px 12px; font-size: 12px; color: #666; font-weight: 600; border-bottom: 1px solid #e8e8e8; }
-    td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
-    tr:last-child td { border-bottom: none; }
-    .pname { font-family: monospace; color: #3b4151; font-weight: 600; }
-    .in-q  { font-size: 11px; background: #e8f3fb; color: #61affe; border: 1px solid #b3d7f5; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
-    .in-h  { font-size: 11px; background: #fff7e6; color: #fca130; border: 1px solid #ffd591; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
-    .ptype { font-family: monospace; font-size: 12px; color: #666; }
-    .req   { font-size: 11px; color: #f93e3e; font-weight: 600; }
-    .opt   { font-size: 11px; color: #999; }
-    .pdesc { font-size: 12px; color: #666; margin-top: 2px; }
-
-    .body-schema { background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 12px; font-family: monospace; font-size: 12px; color: #555; line-height: 1.8; }
-    .bkey { color: #3b4151; font-weight: 600; }
-    .btype { color: #61affe; }
-    .breq { color: #f93e3e; font-size: 10px; margin-left: 8px; }
-    .bopt { color: #999; font-size: 10px; margin-left: 8px; }
-
-    .responses { display: flex; flex-direction: column; gap: 6px; }
-    .resp-row { display: flex; align-items: flex-start; gap: 12px; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 9px 12px; font-size: 13px; }
-    .sc200,.sc201 { color: #49cc90; font-weight: bold; font-family: monospace; min-width: 34px; }
-    .sc401        { color: #f93e3e; font-weight: bold; font-family: monospace; min-width: 34px; }
-    .sc404        { color: #fca130; font-weight: bold; font-family: monospace; min-width: 34px; }
-    .sc500        { color: #9012fe; font-weight: bold; font-family: monospace; min-width: 34px; }
-    .rdesc { color: #666; flex: 1; }
-    .example { margin-top: 6px; background: #f5f5f5; border: 1px solid #e8e8e8; border-radius: 3px; padding: 8px 12px; font-family: monospace; font-size: 11px; color: #777; }
-    .jk { color: #3b4151; } .js { color: #49cc90; } .jn { color: #fca130; } .jb { color: #9012fe; }
-
-    .try-box { background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 14px; }
-    .try-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-    .try-label { font-size: 12px; color: #666; min-width: 80px; font-weight: 600; }
-    .try-input { flex: 1; min-width: 160px; max-width: 300px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 6px 10px; font-size: 13px; font-family: monospace; outline: none; }
-    .try-input:focus { border-color: #61affe; }
-    .try-textarea { width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; padding: 10px; font-size: 12px; font-family: monospace; outline: none; resize: vertical; min-height: 110px; color: #3b4151; line-height: 1.6; }
-    .try-textarea:focus { border-color: #61affe; }
-
-    .btn { border: none; border-radius: 4px; padding: 7px 18px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
-    .btn:hover { opacity: 0.82; }
-    .btn-get    { background: #61affe; color: #fff; }
-    .btn-post   { background: #49cc90; color: #fff; }
-    .btn-put    { background: #fca130; color: #fff; }
-    .btn-delete { background: #f93e3e; color: #fff; }
-    .btn-health { background: #9012fe; color: #fff; }
-
-    .resp-output { display: none; margin-top: 10px; background: #f5f5f5; border: 1px solid #e8e8e8; border-radius: 4px; padding: 10px 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 260px; overflow-y: auto; color: #555; }
-    .resp-output.show { display: block; }
-    .sline-ok  { color: #49cc90; font-weight: bold; margin-bottom: 6px; display: block; }
-    .sline-err { color: #f93e3e; font-weight: bold; margin-bottom: 6px; display: block; }
-
-    .footer { text-align: center; padding: 20px; font-size: 12px; color: #999; border-top: 1px solid #e8e8e8; margin-top: 30px; background: #fff; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Anime API CRUD - Erick con IDs</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
 </head>
 <body>
-
-<div class="topbar">
-  <div class="topbar-logo">⚔️ Anime Power API</div>
-  <div class="topbar-sub">Documentación interactiva — Desarrollado por Erick</div>
-</div>
-
-<div class="info-block">
-  <h2>Anime Power API <span class="version">v8.0.0</span></h2>
-  <p>API RESTful en Perl CGI para gestión de personajes de anime. Soporta operaciones CRUD completas con persistencia en JSON.</p>
-  <p class="base">Base URL: <code id="baseUrl"></code></p>
-</div>
-
-<div class="auth-box">
-  <label>🔒 X-Auth-Token:</label>
-  <input type="password" id="globalToken" value="admin123">
-  <span class="note">Requerido en POST, PUT y DELETE. GET es libre.</span>
-</div>
-
-<!-- ─── GUERREROS ─── -->
-<div class="section-title">Guerreros</div>
-
-<!-- GET -->
-<div class="endpoint" id="c-get">
-  <div class="ep-header" onclick="toggle('c-get')">
-    <span class="method GET">GET</span>
-    <span class="ep-path">/cgi-bin/api.pl</span>
-    <span class="ep-summary">Listar todos o filtrar por parámetros</span>
-    <span class="chevron">▼</span>
-  </div>
-  <div class="ep-body">
-    <div class="param-section">
-      <h4>Parámetros (todos opcionales)</h4>
-      <table>
-        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
-        <tbody>
-          <tr><td><span class="pname">id</span></td><td><span class="in-q">query</span></td><td><span class="ptype">integer</span></td><td><span class="opt">no</span></td><td><span class="pdesc">Filtra por ID exacto</span></td></tr>
-          <tr><td><span class="pname">universo</span></td><td><span class="in-q">query</span></td><td><span class="ptype">string</span></td><td><span class="opt">no</span></td><td><span class="pdesc">Filtra por universo. Case-insensitive (ej: Dragon Ball)</span></td></tr>
-          <tr><td><span class="pname">poder_min</span></td><td><span class="in-q">query</span></td><td><span class="ptype">integer</span></td><td><span class="opt">no</span></td><td><span class="pdesc">Nivel de poder mínimo. Devuelve guerreros con poder ≥ valor</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="param-section">
-      <h4>Respuestas</h4>
-      <div class="responses">
-        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Array JSON con guerreros filtrados (o todos si no hay filtros)<div class="example">[ { <span class="jk">"id"</span>: <span class="jn">1</span>, <span class="jk">"nombre"</span>: <span class="js">"Goku"</span>, <span class="jk">"edad"</span>: <span class="jn">37</span>, <span class="jk">"nivel_poder"</span>: <span class="jn">900</span>, <span class="jk">"universo"</span>: <span class="js">"Dragon Ball"</span>, <span class="jk">"rango"</span>: <span class="js">"Adulto"</span> } ]</div></div></div>
-      </div>
-    </div>
-    <div class="param-section">
-      <h4>Probar</h4>
-      <div class="try-box">
-        <div class="try-row"><span class="try-label">id</span><input class="try-input" id="g-id" placeholder="(opcional)"></div>
-        <div class="try-row"><span class="try-label">universo</span><input class="try-input" id="g-uni" placeholder="ej: Naruto"></div>
-        <div class="try-row"><span class="try-label">poder_min</span><input class="try-input" id="g-pow" placeholder="ej: 500"></div>
-        <button class="btn btn-get" onclick="tryGet()">▶ Ejecutar</button>
-        <div class="resp-output" id="out-get"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- POST -->
-<div class="endpoint" id="c-post">
-  <div class="ep-header" onclick="toggle('c-post')">
-    <span class="method POST">POST</span>
-    <span class="ep-path">/cgi-bin/api.pl</span>
-    <span class="ep-summary">Registrar nuevo guerrero</span>
-    <span class="lock-icon">🔒</span>
-    <span class="chevron">▼</span>
-  </div>
-  <div class="ep-body">
-    <div class="param-section">
-      <h4>Headers</h4>
-      <table>
-        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
-        <tbody>
-          <tr><td><span class="pname">X-Auth-Token</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc">Token de autenticación. Valor: <code>admin123</code></span></td></tr>
-          <tr><td><span class="pname">Content-Type</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc"><code>application/json</code></span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="param-section">
-      <h4>Request Body (application/json)</h4>
-      <div class="body-schema">
-{<br>
-&nbsp;&nbsp;<span class="bkey">"nombre"</span>: <span class="btype">string</span><span class="breq">★ requerido</span><br>
-&nbsp;&nbsp;<span class="bkey">"edad"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
-&nbsp;&nbsp;<span class="bkey">"nivel_poder"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
-&nbsp;&nbsp;<span class="bkey">"universo"</span>: <span class="btype">string</span><span class="bopt">opcional</span><br>
-}
-      </div>
-      <p style="font-size:12px;color:#666;margin-top:8px;">El campo <code>rango</code> se asigna automáticamente: edad &lt; 18 → <b>Joven</b> · 18–99 → <b>Adulto</b> · ≥ 100 → <b>Legendario</b></p>
-    </div>
-    <div class="param-section">
-      <h4>Respuestas</h4>
-      <div class="responses">
-        <div class="resp-row"><span class="sc201">201</span><div class="rdesc">Guerrero creado exitosamente<div class="example">{ <span class="jk">"status"</span>: <span class="js">"Creado"</span>, <span class="jk">"id"</span>: <span class="jn">5</span> }</div></div></div>
-        <div class="resp-row"><span class="sc401">401</span><div class="rdesc">Token inválido o ausente</div></div>
-      </div>
-    </div>
-    <div class="param-section">
-      <h4>Probar</h4>
-      <div class="try-box">
-        <textarea class="try-textarea" id="post-body">{
-  "nombre": "Vegeta",
-  "edad": 45,
-  "nivel_poder": 850,
-  "universo": "Dragon Ball"
-}</textarea>
-        <button class="btn btn-post" onclick="tryPost()">▶ Ejecutar</button>
-        <div class="resp-output" id="out-post"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- PUT -->
-<div class="endpoint" id="c-put">
-  <div class="ep-header" onclick="toggle('c-put')">
-    <span class="method PUT">PUT</span>
-    <span class="ep-path">/cgi-bin/api.pl</span>
-    <span class="ep-summary">Actualizar guerrero existente</span>
-    <span class="lock-icon">🔒</span>
-    <span class="chevron">▼</span>
-  </div>
-  <div class="ep-body">
-    <div class="param-section">
-      <h4>Headers</h4>
-      <table>
-        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
-        <tbody>
-          <tr><td><span class="pname">X-Auth-Token</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc">Token de autenticación</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="param-section">
-      <h4>Request Body (application/json)</h4>
-      <div class="body-schema">
-{<br>
-&nbsp;&nbsp;<span class="bkey">"id"</span>: <span class="btype">integer</span><span class="breq">★ requerido — ID del guerrero a actualizar</span><br>
-&nbsp;&nbsp;<span class="bkey">"nombre"</span>: <span class="btype">string</span><span class="breq">★ requerido</span><br>
-&nbsp;&nbsp;<span class="bkey">"edad"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
-&nbsp;&nbsp;<span class="bkey">"nivel_poder"</span>: <span class="btype">integer (0-999)</span><span class="breq">★ requerido</span><br>
-&nbsp;&nbsp;<span class="bkey">"universo"</span>: <span class="btype">string</span><span class="bopt">opcional</span><br>
-}
-      </div>
-    </div>
-    <div class="param-section">
-      <h4>Respuestas</h4>
-      <div class="responses">
-        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Guerrero actualizado<div class="example">{ <span class="jk">"status"</span>: <span class="js">"Actualizado"</span> }</div></div></div>
-        <div class="resp-row"><span class="sc404">404</span><div class="rdesc">ID no encontrado</div></div>
-        <div class="resp-row"><span class="sc401">401</span><div class="rdesc">Token inválido o ausente</div></div>
-      </div>
-    </div>
-    <div class="param-section">
-      <h4>Probar</h4>
-      <div class="try-box">
-        <textarea class="try-textarea" id="put-body">{
-  "id": 1,
-  "nombre": "Goku SSJ",
-  "edad": 37,
-  "nivel_poder": 999,
-  "universo": "Dragon Ball"
-}</textarea>
-        <button class="btn btn-put" onclick="tryPut()">▶ Ejecutar</button>
-        <div class="resp-output" id="out-put"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- DELETE -->
-<div class="endpoint" id="c-delete">
-  <div class="ep-header" onclick="toggle('c-delete')">
-    <span class="method DELETE">DELETE</span>
-    <span class="ep-path">/cgi-bin/api.pl?id={id}</span>
-    <span class="ep-summary">Eliminar guerrero por ID</span>
-    <span class="lock-icon">🔒</span>
-    <span class="chevron">▼</span>
-  </div>
-  <div class="ep-body">
-    <div class="param-section">
-      <h4>Parámetros</h4>
-      <table>
-        <thead><tr><th>Nombre</th><th>En</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
-        <tbody>
-          <tr><td><span class="pname">id</span></td><td><span class="in-q">query</span></td><td><span class="ptype">integer</span></td><td><span class="req">sí</span></td><td><span class="pdesc">ID del guerrero a eliminar</span></td></tr>
-          <tr><td><span class="pname">X-Auth-Token</span></td><td><span class="in-h">header</span></td><td><span class="ptype">string</span></td><td><span class="req">sí</span></td><td><span class="pdesc">Token de autenticación</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="param-section">
-      <h4>Respuestas</h4>
-      <div class="responses">
-        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Guerrero eliminado<div class="example">{ <span class="jk">"status"</span>: <span class="js">"Eliminado"</span>, <span class="jk">"id"</span>: <span class="jn">3</span> }</div></div></div>
-        <div class="resp-row"><span class="sc404">404</span><div class="rdesc">ID no encontrado</div></div>
-        <div class="resp-row"><span class="sc401">401</span><div class="rdesc">Token inválido o ausente</div></div>
-      </div>
-    </div>
-    <div class="param-section">
-      <h4>Probar</h4>
-      <div class="try-box">
-        <div class="try-row"><span class="try-label">id</span><input class="try-input" id="del-id" placeholder="ej: 3" style="max-width:180px"></div>
-        <button class="btn btn-delete" onclick="tryDelete()">▶ Ejecutar</button>
-        <div class="resp-output" id="out-delete"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ─── SISTEMA ─── -->
-<div class="section-title" style="margin-top:24px">Sistema</div>
-
-<!-- HEALTH -->
-<div class="endpoint" id="c-health">
-  <div class="ep-header" onclick="toggle('c-health')">
-    <span class="method HEALTH">GET</span>
-    <span class="ep-path">/cgi-bin/api.pl/health</span>
-    <span class="ep-summary">Health check — estado del servidor</span>
-    <span class="chevron">▼</span>
-  </div>
-  <div class="ep-body">
-    <div class="param-section">
-      <h4>Descripción</h4>
-      <p style="font-size:13px;color:#666;line-height:1.6;">Verifica que el servidor esté activo y que <code>datos.json</code> tenga permisos de escritura. No requiere autenticación.</p>
-    </div>
-    <div class="param-section">
-      <h4>Parámetros</h4>
-      <p style="font-size:12px;color:#999;">Ninguno</p>
-    </div>
-    <div class="param-section">
-      <h4>Respuestas</h4>
-      <div class="responses">
-        <div class="resp-row"><span class="sc200">200</span><div class="rdesc">Servidor operativo<div class="example">{ <span class="jk">"status"</span>: <span class="js">"OK"</span>, <span class="jk">"servidor"</span>: <span class="js">"Apache/Perl CGI"</span>, <span class="jk">"db_writable"</span>: <span class="jb">true</span>, <span class="jk">"timestamp"</span>: <span class="js">"2025-01-01T00:00:00Z"</span> }</div></div></div>
-        <div class="resp-row"><span class="sc500">500</span><div class="rdesc">Error de permisos o servicio no disponible</div></div>
-      </div>
-    </div>
-    <div class="param-section">
-      <h4>Probar</h4>
-      <div class="try-box">
-        <button class="btn btn-health" onclick="tryHealth()">▶ Ejecutar</button>
-        <div class="resp-output" id="out-health"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div style="margin-bottom:30px"></div>
-<div class="footer">Anime Power API v8.0.0 — Desarrollado por Erick — Render + Docker</div>
-
-<script>
-  function getBase() { return document.getElementById('baseUrl').textContent.replace(/\/$/, ''); }
-  function toggle(id) { document.getElementById(id).classList.toggle('open'); }
-  function showOut(id, code, body) {
-    const el = document.getElementById(id);
-    el.classList.add('show');
-    const ok = code >= 200 && code < 300;
-    let fmt = body;
-    try { fmt = JSON.stringify(JSON.parse(body), null, 2); } catch(e) {}
-    el.innerHTML = `<span class="${ok ? 'sline-ok' : 'sline-err'}">HTTP ${code} ${ok ? '✓' : '✗'}</span>${fmt}`;
-  }
-
-  async function tryGet() {
-    const id = document.getElementById('g-id').value;
-    const uni = document.getElementById('g-uni').value;
-    const pow = document.getElementById('g-pow').value;
-    let url = getBase() + '/cgi-bin/api.pl';
-    const p = [];
-    if (id)  p.push('id=' + encodeURIComponent(id));
-    if (uni) p.push('universo=' + encodeURIComponent(uni));
-    if (pow) p.push('poder_min=' + encodeURIComponent(pow));
-    if (p.length) url += '?' + p.join('&');
-    try { const r = await fetch(url); showOut('out-get', r.status, await r.text()); }
-    catch(e) { showOut('out-get', 0, 'Error de red: ' + e.message); }
-  }
-
-  async function tryPost() {
-    const token = document.getElementById('globalToken').value;
-    const body  = document.getElementById('post-body').value;
-    try {
-      const r = await fetch(getBase() + '/cgi-bin/api.pl', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token }, body
-      });
-      showOut('out-post', r.status, await r.text());
-    } catch(e) { showOut('out-post', 0, 'Error de red: ' + e.message); }
-  }
-
-  async function tryPut() {
-    const token = document.getElementById('globalToken').value;
-    const body  = document.getElementById('put-body').value;
-    try {
-      const r = await fetch(getBase() + '/cgi-bin/api.pl', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token }, body
-      });
-      showOut('out-put', r.status, await r.text());
-    } catch(e) { showOut('out-put', 0, 'Error de red: ' + e.message); }
-  }
-
-  async function tryDelete() {
-    const token = document.getElementById('globalToken').value;
-    const id    = document.getElementById('del-id').value;
-    if (!id) { alert('Ingresa un ID'); return; }
-    try {
-      const r = await fetch(getBase() + '/cgi-bin/api.pl?id=' + id, {
-        method: 'DELETE', headers: { 'X-Auth-Token': token }
-      });
-      showOut('out-delete', r.status, await r.text());
-    } catch(e) { showOut('out-delete', 0, 'Error de red: ' + e.message); }
-  }
-
-  async function tryHealth() {
-    try { const r = await fetch(getBase() + '/cgi-bin/api.pl/health'); showOut('out-health', r.status, await r.text()); }
-    catch(e) { showOut('out-health', 0, 'Error de red: ' + e.message); }
-  }
-</script>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        window.onload = () => {
+            window.ui = SwaggerUIBundle({
+                spec: {
+                    "openapi": "3.0.0",
+                    "info": { "title": "Anime API con IDs", "version": "1.1.0" },
+                    "paths": {
+                        "/cgi-bin/api.pl": {
+                            "get": {
+                                "summary": "Obtener personajes",
+                                "parameters": [{ "name": "id", "in": "query", "description": "ID del personaje (Opcional)", "schema": { "type": "integer" } }],
+                                "responses": { "200": { "description": "OK" } }
+                            },
+                            "post": {
+                                "summary": "Agregar personaje (Genera ID solo)",
+                                "requestBody": {
+                                    "required": true,
+                                    "content": { "application/json": { "schema": { "type": "object", "properties": { "nombre": {"type":"string"}, "universo": {"type":"string"}, "nivel_poder": {"type":"string"} } } } }
+                                },
+                                "responses": { "200": { "description": "Creado" } }
+                            },
+                            "patch": {
+                                "summary": "Editar por ID",
+                                "requestBody": {
+                                    "required": true,
+                                    "content": { "application/json": { "schema": { "type": "object", "properties": { "id": {"type":"integer", "example": 1}, "nombre": {"type":"string"}, "universo": {"type":"string"} } } } }
+                                },
+                                "responses": { "200": { "description": "Actualizado" } }
+                            },
+                            "delete": {
+                                "summary": "Eliminar por ID",
+                                "parameters": [{ "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }],
+                                "responses": { "200": { "description": "Eliminado" } }
+                            }
+                        }
+                    }
+                },
+                dom_id: '#swagger-ui',
+                presets: [SwaggerUIBundle.presets.apis],
+                layout: "BaseLayout"
+            });
+        };
+    </script>
 </body>
 </html>
