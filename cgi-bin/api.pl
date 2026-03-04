@@ -5,7 +5,6 @@ use CGI;
 use JSON;
 use File::Slurp;
 use POSIX qw(strftime);
-use List::Util qw(max);
 
 my $cgi    = CGI->new;
 my $metodo = $cgi->request_method();
@@ -101,7 +100,10 @@ elsif ($metodo eq 'POST') {
     }
 
     # Generar ID: max(ids existentes) + 1, evita duplicados tras borrados
-    my $max_id = @$personajes ? max(map { $_->{id} } @$personajes) : 0;
+    my $max_id = 0;
+for my $p (@$personajes) {
+    $max_id = $p->{id} if $p->{id} > $max_id;
+}
     $nuevo->{id} = $max_id + 1;
 
     # Asignar rango automático
