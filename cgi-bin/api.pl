@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use CGI;
+use CGI::Carp qw(fatalsToBrowser);
 use JSON;
 use File::Slurp;
 use POSIX qw(strftime);
