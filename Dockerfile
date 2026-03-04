@@ -5,7 +5,11 @@ RUN apt-get update && apt-get install -y \
     libjson-perl \
     libfile-slurp-perl \
     libcgi-pm-perl \
+    libposix-perl \
+    cpanminus \
     && rm -rf /var/lib/apt/lists/*
+
+RUN cpanm CGI JSON File::Slurp POSIX
 
 RUN sed -i \
     -e 's/#LoadModule cgi_module modules\/mod_cgi.so/LoadModule cgi_module modules\/mod_cgi.so/' \
