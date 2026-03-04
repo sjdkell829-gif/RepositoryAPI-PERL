@@ -27,5 +27,5 @@ RUN echo "[]" > /usr/local/apache2/cgi-bin/datos.json
 RUN chmod -R 777 /usr/local/apache2/cgi-bin/
 RUN chmod +x /usr/local/apache2/cgi-bin/api.pl
 RUN chown -R www-data:www-data /usr/local/apache2/cgi-bin/
-
+RUN cat /usr/local/apache2/conf/httpd.conf | grep -i cgi
 EXPOSE 80
