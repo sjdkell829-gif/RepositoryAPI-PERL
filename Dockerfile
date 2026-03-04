@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
     perl \
     libjson-perl \
     libfile-slurp-perl \
+    libcgi-pm-perl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN sed -i \
