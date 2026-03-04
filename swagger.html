@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Swagger - Erick API</title>
+    <meta charset="UTF-8">
+    <title>Swagger - Documentación Técnica API</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui.css" />
 </head>
 <body>
@@ -12,32 +13,67 @@
             dom_id: '#swagger-ui',
             spec: {
                 openapi: "3.0.0",
-                info: { title: "Anime Power API", version: "5.0.0", description: "Soporte completo para CRUD y Filtros" },
+                info: { 
+                    title: "Anime Multiverse API", 
+                    version: "5.0.1", 
+                    description: "Documentación de endpoints para gestión de personajes (Erick)." 
+                },
                 paths: {
                     "/cgi-bin/api.pl": {
                         "get": {
                             "summary": "Obtener / Filtrar Guerreros",
+                            "description": "Permite traer todos, buscar por ID individual o filtrar por criterios.",
                             "parameters": [
-                                { "name": "id", "in": "query", "description": "ID Individual", "schema": { "type": "integer" } },
-                                { "name": "universo", "in": "query", "description": "Filtrar por Universo", "schema": { "type": "string" } },
-                                { "name": "poder_min", "in": "query", "description": "Poder Minimo", "schema": { "type": "integer" } }
+                                { "name": "id", "in": "query", "description": "ID del personaje", "schema": { "type": "integer" } },
+                                { "name": "universo", "in": "query", "description": "Filtrar por universo (Ej: Universo 7)", "schema": { "type": "string" } },
+                                { "name": "poder_min", "in": "query", "description": "Mínimo de poder requerido", "schema": { "type": "integer" } }
                             ],
-                            "responses": { "200": { "description": "OK" } }
+                            "responses": { "200": { "description": "Lista de resultados" } }
                         },
                         "post": {
-                            "summary": "Registrar Nuevo",
+                            "summary": "Crear Guerrero",
                             "parameters": [{ "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string", "default": "admin123" } }],
-                            "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "nombre": { "type": "string" }, "edad": { "type": "integer" }, "universo": { "type": "string" }, "nivel_poder": { "type": "integer" } } } } } },
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "nombre": { "type": "string", "example": "Goku" },
+                                                "edad": { "type": "integer", "example": 35 },
+                                                "universo": { "type": "string", "example": "7" },
+                                                "nivel_poder": { "type": "integer", "example": 9000 }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
                             "responses": { "201": { "description": "Creado" } }
                         },
                         "put": {
-                            "summary": "Actualizar Existente",
+                            "summary": "Actualizar Guerrero",
                             "parameters": [{ "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string", "default": "admin123" } }],
-                            "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "type": "integer" }, "nombre": { "type": "string" }, "edad": { "type": "integer" }, "universo": { "type": "string" }, "nivel_poder": { "type": "integer" } } } } } },
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": { "type": "integer", "example": 1 },
+                                                "nombre": { "type": "string" },
+                                                "edad": { "type": "integer" },
+                                                "universo": { "type": "string" },
+                                                "nivel_poder": { "type": "integer" }
+                                            },
+                                            "required": ["id"]
+                                        }
+                                    }
+                                }
+                            },
                             "responses": { "200": { "description": "Actualizado" } }
                         },
                         "delete": {
-                            "summary": "Eliminar por ID",
+                            "summary": "Borrar Guerrero",
                             "parameters": [
                                 { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } },
                                 { "name": "X-Auth-Token", "in": "header", "required": true, "schema": { "type": "string", "default": "admin123" } }
